@@ -50,12 +50,14 @@ def trip_request(start_station: Station, stop_station: Station, request_time: in
     request = request.replace('$STOP_ID', str(stop_station))
     request = request.replace('$TIME', request_time)
     if polygons:
-        request.replace('$POLYGONS', '')
+        request = request.replace('$POLYGONS', '<IncludeLegProjection>true</IncludeLegProjection>')
     else:
-        request.replace('$POLYGONS', '<IncludeLegProjection>true</IncludeLegProjection>')
+        request = request.replace('$POLYGONS', '')
     r = requests.post(url, request, headers=headers)
     tree: List[ElementTree.ElementTree] = ElementTree.fromstring(r.content)
     request_element: TripResponse = TripResponse(tree)
+    if polygons:
+        request_element.get_cords()
     return request_element
 
 

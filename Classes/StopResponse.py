@@ -32,3 +32,8 @@ class StopResponse(Response):
         if not self._lines:
             self.__get_lines()
         return self._lines
+
+    def __len__(self) -> int:
+        if not self._lines:
+            self.__get_lines()
+        return len(self._lines)

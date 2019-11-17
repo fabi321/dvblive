@@ -17,13 +17,19 @@ class TripResponse(Response):
         self._stations: [List[str], None] = None
         self._line: [Line, None] = None
         self._sections: [List[Section], None] = None
+        self._lons: [List[str], None] = None
+        self._lats: [List[str], None] = None
 
     def __get_cords(self):
-        self._lats: List[str] = select(self._elements, XPaths.lats, namespaces=self._namespaces)
         self._lons: List[str] = select(self._elements, XPaths.lons, namespaces=self._namespaces)
+        self._lats: List[str] = select(self._elements, XPaths.lats, namespaces=self._namespaces)
         self._locations: List[Location] = []
-        for i in range(len(self._lats)):
+        for i in range(len(self._lons)):
             self._locations.append({'latitude': float(self._lats[i]), 'longitude': float(self._lons[i])})
+        for i in range(len(self._locations) - 1, 1, -1):
+            if self._locations.count(self._locations[i]) > 1:
+                self._locations.pop(i)
+
 
     def get_cords(self) -> List[Location]:
         if not self._locations:

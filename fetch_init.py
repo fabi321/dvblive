@@ -8,7 +8,7 @@ import datetime
 from request import parallel_location, parallel_stop, parallel_trip
 import logging
 
-logger: logging.Logger = logging.getLogger('main')
+logger: logging.Logger = logging.getLogger('fetch_init')
 output_format = Tuple[List[Line], List[Station], Dict[str, Section]]
 
 

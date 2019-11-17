@@ -38,7 +38,16 @@ trip_request: str ="""<?xml version="1.0" encoding="UTF-8"?>
           </LocationRef>
         </Destination>
         <Params>
+          <PtModeFilter>
+            <Exclude>false</Exclude>
+            <PtMode>tram</PtMode>
+          </PtModeFilter>
+          <NumberOfResults>1</NumberOfResults>
+          <InterchangeLimit>1</InterchangeLimit>
+          <AlgorithmType>minChanges</AlgorithmType>
           <IncludeTrackSections>true</IncludeTrackSections>
+          <IncludeEstimatedTimes>true</IncludeEstimatedTimes>
+          <IncludeSituationInfo>true</IncludeSituationInfo>
           <IncludeIntermediateStops>true</IncludeIntermediateStops>
           $POLYGONS
         </Params>

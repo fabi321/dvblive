@@ -22,3 +22,6 @@ class Line:
 
     def delete_stations(self):
         self._stations.clear()
+
+    def get_line_number(self) -> int:
+        return self._number

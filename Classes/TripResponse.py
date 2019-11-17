@@ -21,8 +21,8 @@ class TripResponse(Response):
         self._lats: [List[str], None] = None
 
     def __get_cords(self):
-        self._lons: List[str] = select(self._elements, XPaths.lons, namespaces=self._namespaces)
-        self._lats: List[str] = select(self._elements, XPaths.lats, namespaces=self._namespaces)
+        self._lons: List[str] = select(self._elements, XPaths.lats, namespaces=self._namespaces)
+        self._lats: List[str] = select(self._elements, XPaths.lons, namespaces=self._namespaces)
         self._locations: List[Location] = []
         for i in range(len(self._lons)):
             self._locations.append({'latitude': float(self._lats[i]), 'longitude': float(self._lons[i])})

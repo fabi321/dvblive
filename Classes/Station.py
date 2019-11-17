@@ -23,7 +23,8 @@ class StationWithoutLine:
 
     def get_location(self) -> Location:
         if not self._location:
-            raise NotImplementedError("Tried to fetch station while none was saved")
+            self._location = {'latitude': 0.0, 'longitude': 0.0}
+#            raise NotImplementedError("Tried to fetch station location while none was saved")
         return self._location
 
     def has_location(self) -> bool:

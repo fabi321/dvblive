@@ -23,6 +23,7 @@ class Section:
         if str(other) != self.__str__():
             raise NotImplementedError("Tried to merge different sections")
         self._line += other.get_lines()
+        other.override(self)
         return self
 
     def set_polygon(self, polygon: List[Location]):
@@ -35,7 +36,7 @@ class Section:
 
     def get_polygon(self) -> List[Location]:
         if not self._polygon:
-            raise NotImplementedError("Tried to get polygon from section before setting it")
+            self._polygon = [self._start_station.get_location(), self._end_station.get_location()]
         return self._polygon
 
     def get_start_station(self) -> Station:
@@ -43,3 +44,8 @@ class Section:
 
     def get_end_station(self) -> Station:
         return self._end_station
+
+    def override(self, section):
+        if not isinstance(section, Section):
+            raise NotImplementedError('Tried to override section with ' + type(section))
+        self = section

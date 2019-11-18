@@ -96,7 +96,8 @@ def trip_request(start_stop: Stop, end_stop: Stop, request_time: int, polygons: 
         r = requests.post(url, request, headers=headers)
         if r.ok:
             break
-        time.sleep(1)
+        else:
+            time.sleep(1)
     tree: List[ElementTree.ElementTree] = ElementTree.fromstring(r.content)
     request_element: TripResponse = TripResponse(tree, **kwargs)
     if debug:

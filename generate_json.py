@@ -2,7 +2,7 @@ import json
 from typing import Dict, List, Tuple, Any
 from fetch_init import output_format
 from Classes.Line import Line
-from Classes.Station import Station
+from Classes.Stop import Stop
 from Classes.Section import Section
 from Classes import Location
 import logging
@@ -12,17 +12,17 @@ logger = logging.getLogger('generate_json')
 
 def generate_json(tuple: output_format) -> Tuple[str, str]:
     abschnitte: List[Dict[str, Any]] = []
-    stations: List[Station] = tuple[1]
+    stops: List[Stop] = tuple[1]
     sections: Dict[str, Section] = tuple[2]
     logger.info('Generating sections json.')
     for i, j in sections.items():
         entry: Dict[str, object] = {}
-        entry.update({'start': str(j.get_start_station())})
-        entry.update({'end': str(j.get_end_station())})
+        entry.update({'start': str(j.get_start_stop())})
+        entry.update({'end': str(j.get_end_stop())})
         entry.update({'maxVerspaetung': 0})
-        start_location: Location = j.get_start_station().get_location()
+        start_location: Location = j.get_start_stop().get_location()
         entry.update({'startPosition': start_location})
-        end_location: Location = j.get_end_station().get_location()
+        end_location: Location = j.get_end_stop().get_location()
         entry.update({'startPosition': end_location})
         polygon: List[Location] = j.get_polygon()
         entry.update({'polygon': polygon})
@@ -35,7 +35,7 @@ def generate_json(tuple: output_format) -> Tuple[str, str]:
     logger.info('Generated sections json.')
     haltestellen: List[Dict[str, str]] = []
     logger.info('Generating haltestellen json.')
-    for i in stations:
+    for i in stops:
         entry: Dict[str, str] = {}
         entry.update({'triasCode': str(i)})
         entry.update(i.get_location())

@@ -5,7 +5,7 @@ import XPaths
 from Classes import Location
 from Classes.Line import Line
 from Classes.Response import Response
-from Classes.Station import Station
+from Classes.Stop import Stop
 from Classes.Section import Section
 
 
@@ -13,15 +13,15 @@ class TripResponse(Response):
     def __init__(self, elements: List[ElementTree.ElementTree], dictionary: bool = False):
         Response.__init__(self, elements, dictionary)
         self._locations: [List[Location], None] = None
-        self._ready_stations: [List[Station], None] = None
-        self._stations: [List[str], None] = None
+        self._ready_stops: [List[Stop], None] = None
+        self._stops: [List[str], None] = None
         self._line: [Line, None] = None
         self._sections: [List[Section], None] = None
         self._lons: [List[str], None] = None
         self._lats: [List[str], None] = None
 
     def __get_cords(self):
-        self._lons: List[str] = select(self._elements, XPaths.lats, namespaces=self._namespaces)
+        self._lons: List[str] = select(self._elements, XPaths.lats, namespaces=self._namespaces)#TODO Lineref, Lines
         self._lats: List[str] = select(self._elements, XPaths.lons, namespaces=self._namespaces)
         self._locations: List[Location] = []
         for i in range(len(self._lons)):
@@ -36,8 +36,8 @@ class TripResponse(Response):
             self.__get_cords()
         return self._locations
 
-    def __get_stations(self):
-        self._stations: List[str] = select(self._elements, XPaths.stations, namespaces=self._namespaces)
+    def __get_stops(self):
+        self._stops: List[str] = select(self._elements, XPaths.stops, namespaces=self._namespaces)
 
     def __get_line(self):
         line_number: str = select(self._elements, XPaths.line_number, namespaces=self._namespaces)
@@ -48,25 +48,25 @@ class TripResponse(Response):
         self._line_trias_id: str = line_trias_id[0] if line_trias_id else None
         self._line = Line(self._line_number, self._line_string, self._line_trias_id)
 
-    def get_stations(self) -> List[Station]:
-        if not self._ready_stations:
-            if not self._stations:
-                self.__get_stations()
+    def get_stops(self) -> List[Stop]:
+        if not self._ready_stops:
+            if not self._stops:
+                self.__get_stops()
             if not self._line:
                 self.__get_line()
-            self._ready_stations: List[Station] = []
-            for i in self._stations:
-                self._ready_stations.append(Station(i, self._line))
-        return self._ready_stations
+            self._ready_stops: List[Stop] = []
+            for i in self._stops:
+                self._ready_stops.append(Stop(i, [self._line]))
+        return self._ready_stops
 
     def __get_sections(self):
         self._sections: List[Section] = []
-        if not self._stations:
-            self.__get_stations()
+        if not self._stops:
+            self.__get_stops()
         if not self._line:
             self.__get_line()
-        for i in range(1, len(self._stations)):
-            self._sections.append(Section(self._ready_stations[i - 1], self._ready_stations[i], self._line))
+        for i in range(1, len(self._stops)):
+            self._sections.append(Section(self._ready_stops[i - 1], self._ready_stops[i], self._line))
 
     def get_sections(self) -> List[Section]:
         if not self._sections:

@@ -3,9 +3,9 @@ import xml_requests
 from xml.etree import ElementTree
 import time
 import datetime
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any
 from Classes.LocationResponse import LocationResponse
-from Classes.Station import Station
+from Classes.Stop import Stop
 from Classes.StopResponse import StopResponse
 from Classes.TripResponse import TripResponse
 import threading
@@ -24,136 +24,105 @@ def unix_time_to_iso(input_time: int) -> str:
     return input_time.replace(tzinfo=datetime.timezone(offset=utc_offset)).isoformat()
 
 
+class Parallelise(threading.Thread):
+    def __init__(self, q: queue.Queue):
+        threading.Thread.__init__(self)
+        self._q: queue.Queue = q
 
-def request_location_informaiton(station: Station):
-    request: str = xml_requests.location_information_request_stop.replace('$STATION', str(station))
-    r = requests.post(url, request, headers=headers)
+    def run(self):
+        while not self._q.empty():
+            queue_lock.acquire()
+            data: Tuple[Any, List[Any], Dict[str, Any], List[Any]] = self._q.get()
+            queue_lock.release()
+            data[3].append(data[0](*data[1], **data[2]))
+
+
+def parallelise(function: Any, args: List[List[Any]], kwargs: List[Dict[str, Any]], threads: int = 20):
+    work_queue: queue.Queue = queue.Queue()
+    thread_list: List[Parallelise] = []
+    output_list: List[Any] = []
+    if len(kwargs) == 1:
+        for i in args:
+            work_queue.put((function, i, kwargs[0], output_list))
+    else:
+        for i in range(len(args)):
+            work_queue.put((function, args[i], kwargs[i], output_list))
+    for i in range(threads):
+        thread = Parallelise(work_queue)
+        thread.start()
+        thread_list.append(thread)
+    for i in thread_list:
+        i.join()
+    return output_list
+
+
+def request_location_informaiton(stop: Stop, debug: bool = False):
+    request: str = xml_requests.location_information_request_stop.replace('$STATION', str(stop))
+    while True:
+        r = requests.post(url, request, headers=headers)
+        if r.ok:
+            break
+        time.sleep(1)
     tree: List[ElementTree.ElementTree] = ElementTree.fromstring(r.content)
     request_element: LocationResponse = LocationResponse(tree)
-    station.set_location(request_element.get_cords())
+    stop.set_location(request_element.get_cords())
 
 
-def stop_request(station: Station, request_time: int, number: int):
-    request: str = xml_requests.stop_request.replace('$STATION', str(station))
-    request_time = unix_time_to_iso(request_time)
+def stop_request(stop: Stop, request_time: int, number: int, debug: bool = False):
+    request: str = xml_requests.stop_request.replace('$STATION', str(stop))
+    request_time: str = unix_time_to_iso(request_time)
     request = request.replace('$TIME', request_time)
     request = request.replace('$NUMBER_OF_RESULTS', str(number))
-    r = requests.post(url, request, headers=headers)
+    while True:
+        r = requests.post(url, request, headers=headers)
+        if r.ok:
+            break
+        time.sleep(1)
     tree: List[ElementTree.ElementTree] = ElementTree.fromstring(r.content)
     request_element: StopResponse = StopResponse(tree)
     return request_element
 
 
-def trip_request(start_station: Station, stop_station: Station, request_time: int, polygons: bool = False):
+def trip_request(start_stop: Stop, end_stop: Stop, request_time: int, polygons: bool = False, debug: bool = False, id: str = None):
     request_time = unix_time_to_iso(request_time)
-    request: str = xml_requests.trip_request.replace('$START_ID', str(start_station))
-    request = request.replace('$STOP_ID', str(stop_station))
+    request: str = xml_requests.trip_request.replace('$START_ID', str(start_stop))
+    request = request.replace('$STOP_ID', str(end_stop))
     request = request.replace('$TIME', request_time)
     if polygons:
         request = request.replace('$POLYGONS', '<IncludeLegProjection>true</IncludeLegProjection>')
     else:
         request = request.replace('$POLYGONS', '')
-    r = requests.post(url, request, headers=headers)
+    while True:
+        r = requests.post(url, request, headers=headers)
+        if r.ok:
+            break
+        time.sleep(1)
     tree: List[ElementTree.ElementTree] = ElementTree.fromstring(r.content)
     request_element: TripResponse = TripResponse(tree)
+    if debug:
+        request_element.get_stops()
     if polygons:
         request_element.get_cords()
+    if id:
+        return id, request_element
     return request_element
 
 
-class ParallelLocation(threading.Thread):
-    def __init__(self, q: queue.Queue):
-        threading.Thread.__init__(self)
-        self._q: queue.Queue = q
-
-    def run(self):
-        while not self._q.empty():
-            queue_lock.acquire()
-            station: Station = self._q.get()
-            queue_lock.release()
-            request_location_informaiton(station)
+def parallel_location(stops: List[Stop], debug: bool = False, threads: int = 20):
+    args: List[List[Stop]] = []
+    for i in stops:
+        args.append([i])
+    parallelise(request_location_informaiton, args, [{'debug': debug}], threads=threads)
 
 
-def parallel_location(stations: List[Station], threads: int = 20):
-    work_queue: queue.Queue = queue.Queue()
-    thread_list: List[ParallelLocation] = []
-    for i in stations:
-        work_queue.put(i)
-    for i in range(threads):
-        thread = ParallelLocation(work_queue)
-        thread.start()
-        thread_list.append(thread)
-    for i in thread_list:
-        i.join()
-
-
-stop_response_list: List[StopResponse] = []
-
-
-class ParallelStop(threading.Thread):
-    def __init__(self, q: queue.Queue):
-        threading.Thread.__init__(self)
-        self._q: queue.Queue = q
-
-    def run(self):
-        while not self._q.empty():
-            queue_lock.acquire()
-            data: Dict = self._q.get()
-            queue_lock.release()
-            stop_response: StopResponse = stop_request(data['station'], data['request_time'], data['number'])
-            queue_lock.acquire()
-            stop_response_list.append(stop_response)
-            queue_lock.release()
-
-
-def parallel_stop(data: List[Dict], threads: int = 20):
-    work_queue: queue.Queue = queue.Queue()
-    stop_response_list.clear()
-    thread_list: List[ParallelStop] = []
-    for i in data:
-        work_queue.put(i)
-    for i in range(threads):
-        thread = ParallelStop(work_queue)
-        thread.start()
-        thread_list.append(thread)
-    for i in thread_list:
-        i.join()
+def parallel_stop(data: List[List[Any]], debug: bool = False, threads: int = 20):
+    stop_response_list = parallelise(stop_request, data, [{'debug': debug}], threads=threads)
     return stop_response_list
 
 
-trip_response_list: [List[TripResponse], List[Tuple[TripResponse, str]]] = []
-
-
-class ParallelTrip(threading.Thread):
-    def __init__(self, q: queue.Queue):
-        threading.Thread.__init__(self)
-        self._q: queue.Queue = q
-
-    def run(self):
-        while not self._q.empty():
-            queue_lock.acquire()
-            data: Dict = self._q.get()
-            queue_lock.release()
-            if type(data) == dict:
-                trip_response: TripResponse = trip_request(data['start_station'], data['stop_station'], data['request_time'], data['polygon'])
-            else:
-                trip_response: Tuple[TripResponse, str] = (trip_request(data[0]['start_station'], data[0]['stop_station'],
-                                                           data[0]['request_time'], data[0]['polygon']), data[1])
-            queue_lock.acquire()
-            trip_response_list.append(trip_response)
-            queue_lock.release()
-
-
-def parallel_trip(data: [List[Dict], List[Tuple[Dict, str]]], threads: int = 20):
-    work_queue: queue.Queue = queue.Queue()
-    trip_response_list.clear()
-    thread_list: List[ParallelTrip] = []
-    for i in data:
-        work_queue.put(i)
-    for i in range(threads):
-        thread = ParallelTrip(work_queue)
-        thread.start()
-        thread_list.append(thread)
-    for i in thread_list:
-        i.join()
+def parallel_trip(data: List[List[Any]], debug: bool = False, threads: int = 20, kwargs: List[Dict[str, Any]] = None):
+    if kwargs:
+        trip_response_list = parallelise(trip_request, data, kwargs, threads=threads)
+    else:
+        trip_response_list = parallelise(trip_request, data, [{'debug': debug}], threads=threads)
     return trip_response_list

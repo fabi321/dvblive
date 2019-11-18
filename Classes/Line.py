@@ -6,22 +6,22 @@ class Line:
         self._number: int = number
         self._string: str = string
         self._trias: str = trias
-        self._stations: [List, None] = None
+        self._stops: [List, None] = None
 
     def __str__(self) -> str:
         return self._trias
 
-    def add_station(self, station):
-        if not self._stations:
-            self._stations = [station]
+    def add_stop(self, stop):
+        if not self._stops:
+            self._stops = [stop]
         else:
-            self._stations.append(station)
+            self._stops.append(stop)
 
-    def get_stations(self) -> List:
-        return self._stations
+    def get_stops(self) -> List:
+        return self._stops
 
-    def delete_stations(self):
-        self._stations.clear()
+    def delete_stops(self):
+        self._stops.clear()
 
     def get_line_number(self) -> int:
         return self._number

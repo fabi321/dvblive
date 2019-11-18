@@ -4,7 +4,7 @@ from elementpath import select
 import XPaths
 from Classes.Line import Line
 from Classes.Response import Response
-from Classes.Station import StationWithoutLine
+from Classes.Stop import StopWithoutLine
 
 
 class StopResponse(Response):
@@ -24,8 +24,8 @@ class StopResponse(Response):
             number: int = int(self._lines_number[i])
             string: str = self._lines_string[i]
             line: Line = Line(number, string, trias_id)
-            line.add_station(StationWithoutLine(self._lines_start[i]))
-            line.add_station(StationWithoutLine(self._lines_end[i]))
+            line.add_stop(StopWithoutLine(self._lines_start[i]))
+            line.add_stop(StopWithoutLine(self._lines_end[i]))
             self._lines.append(line)
 
     def get_lines(self) -> List[Line]:

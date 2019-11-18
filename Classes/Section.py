@@ -1,18 +1,18 @@
 from typing import List
 from Classes import Location
 from Classes.Line import Line
-from Classes.Station import Station
+from Classes.Stop import Stop
 
 
 class Section:
-    def __init__(self, start_station: Station, end_station: Station, line: Line):
-        self._start_station: Station = start_station
-        self._end_station: Station = end_station
+    def __init__(self, start_stop: Stop, end_stop: Stop, line: Line):
+        self._start_stop: Stop = start_stop
+        self._end_stop: Stop = end_stop
         self._line: List[Line] = [line]
         self._polygon: [List[Location], None] = None
 
     def __str__(self) -> str:
-        return str(self._start_station) + '=|=' + str(self._end_station)
+        return str(self._start_stop) + '=|=' + str(self._end_stop)
 
     def get_lines(self) -> List[Line]:
         return self._line
@@ -36,14 +36,14 @@ class Section:
 
     def get_polygon(self) -> List[Location]:
         if not self._polygon:
-            self._polygon = [self._start_station.get_location(), self._end_station.get_location()]
+            self._polygon = [self._start_stop.get_location(), self._end_stop.get_location()]
         return self._polygon
 
-    def get_start_station(self) -> Station:
-        return self._start_station
+    def get_start_stop(self) -> Stop:
+        return self._start_stop
 
-    def get_end_station(self) -> Station:
-        return self._end_station
+    def get_end_stop(self) -> Stop:
+        return self._end_stop
 
     def override(self, section):
         if not isinstance(section, Section):

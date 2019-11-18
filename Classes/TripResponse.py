@@ -7,10 +7,13 @@ from Classes.Line import Line
 from Classes.Response import Response
 from Classes.Stop import Stop
 from Classes.Section import Section
+import logging
+
+logger: logging.Logger = logging.getLogger('TripResponse')
 
 
 class TripResponse(Response):
-    def __init__(self, elements: List[ElementTree.ElementTree], dictionary: bool = False):
+    def __init__(self, elements: List[ElementTree.ElementTree], dictionary: bool = False, line_triad_id: str = None):
         Response.__init__(self, elements, dictionary)
         self._locations: [List[Location], None] = None
         self._ready_stops: [List[Stop], None] = None
@@ -19,10 +22,17 @@ class TripResponse(Response):
         self._sections: [List[Section], None] = None
         self._lons: [List[str], None] = None
         self._lats: [List[str], None] = None
+        self._predefined_line_trias_id = line_triad_id
 
     def __get_cords(self):
-        self._lons: List[str] = select(self._elements, XPaths.lats, namespaces=self._namespaces)#TODO Lineref, Lines
-        self._lats: List[str] = select(self._elements, XPaths.lons, namespaces=self._namespaces)
+        if self._predefined_line_trias_id:
+            lats = XPaths.lats_with_lineref.replace('$LINEREF', self._predefined_line_trias_id)
+            lons = XPaths.lons_with_lineref.replace('$LINEREF', self._predefined_line_trias_id)
+        else:
+            lats = XPaths.lats_without_lineref
+            lons = XPaths.lons_without_lineref
+        self._lons: List[str] = select(self._elements, lats, namespaces=self._namespaces)
+        self._lats: List[str] = select(self._elements, lons, namespaces=self._namespaces)
         self._locations: List[Location] = []
         for i in range(len(self._lons)):
             self._locations.append({'latitude': float(self._lats[i]), 'longitude': float(self._lons[i])})
@@ -36,17 +46,37 @@ class TripResponse(Response):
             self.__get_cords()
         return self._locations
 
-    def __get_stops(self):
-        self._stops: List[str] = select(self._elements, XPaths.stops, namespaces=self._namespaces)
-
     def __get_line(self):
-        line_number: str = select(self._elements, XPaths.line_number, namespaces=self._namespaces)
+        if self._predefined_line_trias_id:
+            line_number = XPaths.line_number_with_lineref.replace('$LINEREF', self._predefined_line_trias_id)
+            line_string = XPaths.line_string_with_lineref.replace('$LINEREF', self._predefined_line_trias_id)
+            line_trias_id = XPaths.line_trias_id_with_lineref.replace('$LINEREF', self._predefined_line_trias_id)
+        else:
+            line_number = XPaths.line_number_without_lineref
+            line_string = XPaths.line_string_without_lineref
+            line_trias_id = XPaths.line_trias_id_without_lineref
+        line_number: str = select(self._elements, line_number, namespaces=self._namespaces)
         self._line_number: int = int(line_number[0]) if line_number else None
-        line_string = select(self._elements, XPaths.line_string, namespaces=self._namespaces)
+        line_string = select(self._elements, line_string, namespaces=self._namespaces)
         self._line_string: str = line_string[0] if line_string else None
-        line_trias_id = select(self._elements, XPaths.line_trias_id, namespaces=self._namespaces)
+        line_trias_id = select(self._elements, line_trias_id, namespaces=self._namespaces)
         self._line_trias_id: str = line_trias_id[0] if line_trias_id else None
+        if not self._line_trias_id:
+            logger.warning('Empty TripResponse')
+            return
         self._line = Line(self._line_number, self._line_string, self._line_trias_id)
+
+    def get_line(self) -> Line:
+        if not self._line:
+            self.__get_line()
+        return self._line
+
+    def __get_stops(self):
+        if self._predefined_line_trias_id:
+            stops = XPaths.stops_with_lineref.replace('$LINEREF', self._predefined_line_trias_id)
+        else:
+            stops = XPaths.stops_without_lineref
+        self._stops: List[str] = select(self._elements, stops, namespaces=self._namespaces)
 
     def get_stops(self) -> List[Stop]:
         if not self._ready_stops:
@@ -72,8 +102,3 @@ class TripResponse(Response):
         if not self._sections:
             self.__get_sections()
         return self._sections
-
-    def get_line(self) -> Line:
-        if not self._line:
-            self.__get_line()
-        return self._line

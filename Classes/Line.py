@@ -2,14 +2,15 @@ from typing import List
 #from Classes.Station import StationWithoutLine
 
 class Line:
-    def __init__(self, number: int, string: str, trias: str):
+    def __init__(self, number: int, string: str, trias_id: str):
         self._number: int = number
         self._string: str = string
-        self._trias: str = trias
+        self._trias_id: str = trias_id
+        assert type(self._trias_id) == str
         self._stops: [List, None] = None
 
     def __str__(self) -> str:
-        return self._trias
+        return self._trias_id
 
     def add_stop(self, stop):
         if not self._stops:

@@ -55,11 +55,11 @@ class TripResponse(Response):
         line_number = construct_xpath(True, lineref, True, XPaths.line_number)
         line_string = construct_xpath(True, lineref, True, XPaths.line_string)
         line_trias_id = construct_xpath(True, lineref, True, XPaths.line_trias_id)
-        line_number: str = select(self._elements, line_number, namespaces=self._namespaces)
+        line_number: List[str] = select(self._elements, line_number, namespaces=self._namespaces)
         self._line_number: int = int(line_number[0]) if line_number else None
-        line_string = select(self._elements, line_string, namespaces=self._namespaces)
+        line_string: List[str] = select(self._elements, line_string, namespaces=self._namespaces)
         self._line_string: str = line_string[0] if line_string else None
-        line_trias_id = select(self._elements, line_trias_id, namespaces=self._namespaces)
+        line_trias_id: List[str] = select(self._elements, line_trias_id, namespaces=self._namespaces)
         self._line_trias_id: str = line_trias_id[0] if line_trias_id else None
         if not self._line_trias_id:
             logger.warning('Empty TripResponse')

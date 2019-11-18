@@ -13,7 +13,7 @@ logger: logging.Logger = logging.getLogger('TripResponse')
 
 
 class TripResponse(Response):
-    def __init__(self, elements: List[ElementTree.ElementTree], dictionary: bool = False, line_triad_id: str = None):
+    def __init__(self, elements: List[ElementTree.ElementTree], dictionary: bool = False, line_trias_id: str = None):
         Response.__init__(self, elements, dictionary)
         self._locations: [List[Location], None] = None
         self._ready_stops: [List[Stop], None] = None
@@ -22,7 +22,7 @@ class TripResponse(Response):
         self._sections: [List[Section], None] = None
         self._lons: [List[str], None] = None
         self._lats: [List[str], None] = None
-        self._predefined_line_trias_id = line_triad_id
+        self._predefined_line_trias_id = line_trias_id
 
     def __get_cords(self):
         if self._predefined_line_trias_id:

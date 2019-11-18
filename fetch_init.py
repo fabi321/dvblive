@@ -38,7 +38,7 @@ def fetch_init(debug: bool = False) -> output_format:
             [i.get_stops()[0], i.get_stops()[1], request_time])
         kwargs.append({'line_trias_id': str(i), 'debug': debug})
     logger.info('Getting lines from start and end stops.')
-    lines: List[TripResponse] = parallel_trip(trips, debug, request_parallelisation)
+    lines: List[TripResponse] = parallel_trip(trips, debug, request_parallelisation, kwargs)
     unique_stops: List[Stop] = []
     for i in lines:
         for i in i.get_stops():

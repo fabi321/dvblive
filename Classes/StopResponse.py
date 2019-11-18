@@ -2,6 +2,7 @@ from typing import List
 from xml.etree import ElementTree
 from elementpath import select
 import XPaths
+from XPaths import construct_xpath
 from Classes.Line import Line
 from Classes.Response import Response
 from Classes.Stop import StopWithoutLine
@@ -13,11 +14,11 @@ class StopResponse(Response):
         self._lines: [List[Line], None] = None
 
     def __get_lines(self):
-        self._lines_trias_id: List[str] = select(self._elements, XPaths.line_trias_id_without_lineref, namespaces=self._namespaces)
-        self._lines_number: List[str] = select(self._elements, XPaths.line_number_without_lineref, namespaces=self._namespaces)
-        self._lines_string: List[str] = select(self._elements, XPaths.line_string_without_lineref, namespaces=self._namespaces)
-        self._lines_start: List[str] = select(self._elements, XPaths.line_start_without_lineref, namespaces=self._namespaces)
-        self._lines_end: List[str] = select(self._elements, XPaths.line_end_without_lineref, namespaces=self._namespaces)
+        self._lines_trias_id: List[str] = select(self._elements, construct_xpath(False, False, XPaths.line_trias_id), namespaces=self._namespaces)
+        self._lines_number: List[str] = select(self._elements, construct_xpath(False, False, XPaths.line_number), namespaces=self._namespaces)
+        self._lines_string: List[str] = select(self._elements, construct_xpath(False, False, XPaths.line_string), namespaces=self._namespaces)
+        self._lines_start: List[str] = select(self._elements, construct_xpath(False, False, XPaths.line_start), namespaces=self._namespaces)
+        self._lines_end: List[str] = select(self._elements, construct_xpath(False, False, XPaths.line_end), namespaces=self._namespaces)
         self._lines: List[Line] = []
         for i in range(len(self._lines_trias_id)):
             trias_id: str = self._lines_trias_id[i]

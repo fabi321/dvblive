@@ -2,6 +2,7 @@ from typing import List
 from xml.etree import ElementTree
 from elementpath import select
 import XPaths
+from XPaths import construct_xpath
 from Classes import Location
 from Classes.Line import Line
 from Classes.Response import Response
@@ -26,11 +27,11 @@ class TripResponse(Response):
 
     def __get_cords(self):
         if self._predefined_line_trias_id:
-            lats = XPaths.lats_with_lineref.replace('$LINEREF', self._predefined_line_trias_id)
-            lons = XPaths.lons_with_lineref.replace('$LINEREF', self._predefined_line_trias_id)
+            lineref = True
         else:
-            lats = XPaths.lats_without_lineref
-            lons = XPaths.lons_without_lineref
+            lineref = False
+        lats = construct_xpath(lineref, True, XPaths.lats)
+        lons = construct_xpath(lineref, True, XPaths.lons)
         self._lons: List[str] = select(self._elements, lats, namespaces=self._namespaces)
         self._lats: List[str] = select(self._elements, lons, namespaces=self._namespaces)
         self._locations: List[Location] = []
@@ -48,13 +49,12 @@ class TripResponse(Response):
 
     def __get_line(self):
         if self._predefined_line_trias_id:
-            line_number = XPaths.line_number_with_lineref.replace('$LINEREF', self._predefined_line_trias_id)
-            line_string = XPaths.line_string_with_lineref.replace('$LINEREF', self._predefined_line_trias_id)
-            line_trias_id = XPaths.line_trias_id_with_lineref.replace('$LINEREF', self._predefined_line_trias_id)
+            lineref = True
         else:
-            line_number = XPaths.line_number_without_lineref
-            line_string = XPaths.line_string_without_lineref
-            line_trias_id = XPaths.line_trias_id_without_lineref
+            lineref = False
+        line_number = construct_xpath(lineref, True, XPaths.line_number)
+        line_string = construct_xpath(lineref, True, XPaths.line_string)
+        line_trias_id = construct_xpath(lineref, True, XPaths.line_trias_id)
         line_number: str = select(self._elements, line_number, namespaces=self._namespaces)
         self._line_number: int = int(line_number[0]) if line_number else None
         line_string = select(self._elements, line_string, namespaces=self._namespaces)
@@ -73,9 +73,10 @@ class TripResponse(Response):
 
     def __get_stops(self):
         if self._predefined_line_trias_id:
-            stops = XPaths.stops_with_lineref.replace('$LINEREF', self._predefined_line_trias_id)
+            lineref = True
         else:
-            stops = XPaths.stops_without_lineref
+            lineref = False
+        stops = construct_xpath(lineref, True, XPaths.stops)
         self._stops: List[str] = select(self._elements, stops, namespaces=self._namespaces)
 
     def get_stops(self) -> List[Stop]:

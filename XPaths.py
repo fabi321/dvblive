@@ -1,8 +1,7 @@
 stoerung: str = "for $x in //StopEvent[descendant::EstimatedTime]/descendant::*[local-name(.)='SituationNumber'] return //PtSituation[*[local-name(.)='SituationNumber'] = $x]/*[local-name(.)='Description']"
 location_lon: str = "//GeoPosition/Longitude/text()"
 location_lat: str = "//GeoPosition/Latitude/text()"
-with_lineref: str = "(//TripResult[descendant::Service[count(ServiceSection) = 1]/ServiceSection[Mode/PtMode = 'tram'][LineRef='$LINEREF']])"
-without_lineref: str = "(//TripResult[descendant::Service[count(ServiceSection) = 1]/ServiceSection[Mode/PtMode = 'tram']])"
+prefix: str = "(//TripResult[descendant::Service[count(ServiceSection) = 1]/ServiceSection[Mode/PtMode = 'tram']$LINEREF])"
 first: str = "[1]"
 lons: str = "/descendant::Projection/Position/Longitude/text()"
 lats: str = "/descendant::Projection/Position/Latitude/text()"
@@ -14,11 +13,15 @@ line_start: str = "/descendant::ServiceSection/../OriginStopPointRef/text()"#rep
 line_end: str = "/descendant::ServiceSection/../DestinationStopPointRef/text()"#replace(., '([a-z]*:[0-9]*:[0-9]*):.*', '$1')"
 
 
-def construct_xpath(lineref: bool, single: bool, original_string):
-    if lineref and single:
-        return with_lineref + first + original_string
-    elif lineref:
-        return with_lineref + original_string
-    elif single:
-        return without_lineref + first + original_string
-    return without_lineref + original_string
+def construct_xpath(trip: bool, lineref: bool, single: bool, original_string):
+    if trip:
+        temp_pre = prefix
+    else:
+        temp_pre = prefix.replace('TripResult', 'StopEventResult')
+    if lineref:
+        temp_pre = temp_pre.replace('$LINEREF', "[descendant::LineRef='$LINEREF']")
+    else:
+        temp_pre = temp_pre.replace('$LINEREF', '')
+    if single:
+        return temp_pre + first + original_string
+    return temp_pre + original_string

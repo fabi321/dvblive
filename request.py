@@ -83,7 +83,7 @@ def stop_request(stop: Stop, request_time: int, number: int, debug: bool = False
     return request_element
 
 
-def trip_request(start_stop: Stop, end_stop: Stop, request_time: int, polygons: bool = False, debug: bool = False, id: str = None):
+def trip_request(start_stop: Stop, end_stop: Stop, request_time: int, polygons: bool = False, debug: bool = False, id: str = None, **kwargs):
     request_time = unix_time_to_iso(request_time)
     request: str = xml_requests.trip_request.replace('$START_ID', str(start_stop))
     request = request.replace('$STOP_ID', str(end_stop))
@@ -98,7 +98,7 @@ def trip_request(start_stop: Stop, end_stop: Stop, request_time: int, polygons: 
             break
         time.sleep(1)
     tree: List[ElementTree.ElementTree] = ElementTree.fromstring(r.content)
-    request_element: TripResponse = TripResponse(tree)
+    request_element: TripResponse = TripResponse(tree, **kwargs)
     if debug:
         request_element.get_stops()
     if polygons:

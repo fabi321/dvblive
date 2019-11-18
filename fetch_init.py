@@ -32,9 +32,11 @@ def fetch_init(debug: bool = False) -> output_format:
                 unique_lines.append(i)
     logger.info('Got ' + str(len(unique_lines)) + ' lines.')
     trips: List[List[Any]] = []
+    kwargs: List[Dict[str, Any]] = []
     for i in unique_lines:
         trips.append(
             [i.get_stops()[0], i.get_stops()[1], request_time])
+        kwargs.append({'line_trias_id': str(i), 'debug': debug})
     logger.info('Getting lines from start and end stops.')
     lines: List[TripResponse] = parallel_trip(trips, debug, request_parallelisation)
     unique_stops: List[Stop] = []
@@ -69,7 +71,7 @@ def fetch_init(debug: bool = False) -> output_format:
     for i, j in unique_sections.items():
         trips.append([j.get_start_stop(), j.get_end_stop(),
                        request_time])
-        kwargs.append({'debug': debug, 'id': i, 'polygons': True})
+        kwargs.append({'debug': debug, 'id': i, 'polygons': True, 'line_trias_id': str(j.get_lines()[0])})
     logger.info('Getting polygons for section')
     polygons: List[Tuple[str, TripResponse]] = parallel_trip(trips, threads=request_parallelisation, kwargs=kwargs)
     logger.info('Got polygons for ' + str(len(unique_sections)) + ' sections.')

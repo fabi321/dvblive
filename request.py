@@ -70,7 +70,7 @@ def request_location_informaiton(stop: Stop, debug: bool = False):
     stop.set_location(request_element.get_cords())
 
 
-def stop_request(stop: Stop, request_time: int, number: int, debug: bool = False):
+def stop_request(stop: Stop, request_time: int, number: int, return_tree: bool = False, debug: bool = False, **kwargs):
     request: str = xml_requests.stop_request.replace('$STATION', str(stop))
     request_time: str = unix_time_to_iso(request_time)
     request = request.replace('$TIME', request_time)
@@ -81,7 +81,9 @@ def stop_request(stop: Stop, request_time: int, number: int, debug: bool = False
             break
         time.sleep(1)
     tree: List[ElementTree.ElementTree] = ElementTree.fromstring(r.content)
-    request_element: StopResponse = StopResponse(tree)
+    if return_tree:
+        return tree
+    request_element: StopResponse = StopResponse(tree, **kwargs)
     return request_element
 
 

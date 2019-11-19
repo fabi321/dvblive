@@ -109,6 +109,18 @@ def trip_request(start_stop: Stop, end_stop: Stop, request_time: int, polygons: 
     return request_element
 
 
+def stop_name_request(name: str):
+    request: str = xml_requests.stop_name_request.replace('$NAME', name)
+    while True:
+        r = requests.post(url, request, headers=headers)
+        if r.ok:
+            break
+        else:
+            time.sleep(1)
+    tree: List[ElementTree.ElementTree] = ElementTree.fromstring(r.content)
+    return tree
+
+
 def parallel_location(stops: List[Stop], debug: bool = False, threads: int = 20):
     args: List[List[Stop]] = []
     for i in stops:

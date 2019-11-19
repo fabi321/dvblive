@@ -14,6 +14,10 @@ line_start: str = "/descendant::ServiceSection/../OriginStopPointRef/text()"#rep
 line_start_name: str = "/descendant::ServiceSection/../OriginText/Text/text()"#replace(., '([a-z]*:[0-9]*:[0-9]*):.*', '$1')"
 line_end: str = "/descendant::ServiceSection/../DestinationStopPointRef/text()"#replace(., '([a-z]*:[0-9]*:[0-9]*):.*', '$1')"
 line_end_name: str = "/descendant::ServiceSection/../DestinationText/Text/text()"#replace(., '([a-z]*:[0-9]*:[0-9]*):.*', '$1')"
+stop_name_ref: str = "/descendant::StopPointRef/text()"
+stop_name_lon: str = "/descendant::Longitude/text()"
+stop_name_lat: str = "/descendant::Latitude/text()"
+stop_name_name: str = "/descendant::StopPointName/Text/text()"
 
 
 def construct_xpath(trip: bool, lineref: bool, single: bool, original_string) -> str:

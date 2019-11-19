@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any, Dict
 from xml.etree import ElementTree
 from elementpath import select
 import XPaths
@@ -25,7 +25,7 @@ class TripResponse(Response):
         self._lats: [List[str], None] = None
         self._predefined_line_trias_id = line_trias_id
 
-    def __get_cords(self):
+    def _get_cords(self):
         if self._predefined_line_trias_id:
             lineref = True
         else:
@@ -47,10 +47,10 @@ class TripResponse(Response):
 
     def get_cords(self) -> List[Location]:
         if not self._locations:
-            self.__get_cords()
+            self._get_cords()
         return self._locations
 
-    def __get_line(self):
+    def _get_line(self):
         if self._predefined_line_trias_id:
             lineref = True
         else:
@@ -75,10 +75,10 @@ class TripResponse(Response):
 
     def get_line(self) -> Line:
         if not self._line:
-            self.__get_line()
+            self._get_line()
         return self._line
 
-    def __get_stops(self):
+    def _get_stops(self):
         if self._predefined_line_trias_id:
             lineref = True
         else:
@@ -94,24 +94,24 @@ class TripResponse(Response):
     def get_stops(self) -> List[Stop]:
         if not self._ready_stops:
             if not self._stops:
-                self.__get_stops()
+                self._get_stops()
             if not self._line:
-                self.__get_line()
+                self._get_line()
             self._ready_stops: List[Stop] = []
             for i in range(len(self._stops)):
                 self._ready_stops.append(Stop(self._stops[i], [self._line], self._stop_names[i]))
         return self._ready_stops
 
-    def __get_sections(self):
+    def _get_sections(self):
         self._sections: List[Section] = []
         if not self._stops:
-            self.__get_stops()
+            self._get_stops()
         if not self._line:
-            self.__get_line()
+            self._get_line()
         for i in range(1, len(self._stops)):
             self._sections.append(Section(self._ready_stops[i - 1], self._ready_stops[i], self._line))
 
     def get_sections(self) -> List[Section]:
         if not self._sections:
-            self.__get_sections()
+            self._get_sections()
         return self._sections

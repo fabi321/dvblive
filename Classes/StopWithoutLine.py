@@ -1,7 +1,6 @@
 from typing import List
 
 from Classes import Location
-from Classes.Stop import Stop
 
 
 class StopWithoutLine:
@@ -15,7 +14,7 @@ class StopWithoutLine:
         return self._stop_id
 
     def __eq__(self, other):
-        if not isinstance(other, Stop):
+        if not isinstance(other, StopWithoutLine):
             raise NotImplementedError("Tried to compare Stop with " + str(type(other)))
         return self.__str__() == other.__str__()
 

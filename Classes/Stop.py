@@ -39,3 +39,8 @@ class Stop(StopWithoutLine):
         if not self._base_stop:
             self._get_base_stop()
         return self._base_stop
+
+    def __eq__(self, other):
+        if not isinstance(other, Stop):
+            raise NotImplementedError("Tried to compare Stop with " + str(type(other)))
+        return self.__str__() == other.__str__()

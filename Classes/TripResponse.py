@@ -1,9 +1,8 @@
-from typing import List, Any, Dict
+from typing import List
 from xml.etree import ElementTree
 from elementpath import select
 import XPaths
 from XPaths import construct_xpath
-from request import trip_request, parallel_location
 from Classes import Location
 from Classes.Line import Line
 from Classes.Response import Response
@@ -116,13 +115,3 @@ class TripResponse(Response):
         if not self._sections:
             self._get_sections()
         return self._sections
-
-
-class IDTripResponse(TripResponse):
-    def __init__(self, start: Stop, end: Stop, request_time: int, debug: bool = False, line_trias_id: bool = None, **kwargs):
-        TripResponse.__init__(self, trip_request(start, end, request_time, True, **kwargs), line_trias_id)
-        self._debug: bool = debug
-        self._line_trias_id: bool = line_trias_id
-
-    def request_locations(self):
-        parallel_location(self._stops, self._debug)

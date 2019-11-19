@@ -5,8 +5,7 @@ import XPaths
 from XPaths import construct_xpath
 from Classes.Line import Line
 from Classes.Response import Response
-from Classes.Stop import StopWithoutLine, Stop
-from request import stop_request
+from Classes.StopWithoutLine import StopWithoutLine
 
 
 class StopResponse(Response):
@@ -41,9 +40,3 @@ class StopResponse(Response):
         if not self._lines:
             self._get_lines()
         return len(self._lines)
-
-
-class IDStopResponse(StopResponse):
-    def __init__(self, stop: Stop, request_time: int, debug: bool = False, **kwargs):
-        StopResponse.__init__(self, stop_request(stop, request_time, 15, True, debug=debug, **kwargs))
-        self._debug: bool = debug

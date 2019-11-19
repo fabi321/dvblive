@@ -1,7 +1,6 @@
 from Classes.Response import Response
-from Classes.Stop import StopWithoutLine
+from Classes.StopWithoutLine import StopWithoutLine
 from typing import List
-from request import stop_name_request
 from xml.etree import ElementTree
 from elementpath import select
 import XPaths
@@ -24,9 +23,3 @@ class StopNameResponse(Response):
         if not self._stop:
             self._get_stop()
         return self._stop
-
-
-class IDStopResponse(StopNameResponse):
-    def __init__(self, name: str):
-        StopNameResponse.__init__(self, stop_name_request(name))
-        self.get_stop()

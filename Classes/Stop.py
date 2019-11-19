@@ -31,14 +31,14 @@ class StopWithoutLine:
     def has_location(self) -> bool:
         return True if self._location else False
 
-    def __get_base_stop(self):
+    def _get_base_stop(self):
         stop_list: List[str] = self._stop_id.split(':')
         stop_string: str = stop_list[0] + ':' + stop_list[1] + ':' + stop_list[2]
-        self._base_stop = StopWithoutLine(stop_string)
+        self._base_stop = StopWithoutLine(stop_string, self._name)
 
     def get_base_stop(self):
         if not self._base_stop:
-            self.__get_base_stop()
+            self._get_base_stop()
         return self._base_stop
 
     def get_name(self) -> str:
@@ -72,13 +72,13 @@ class Stop(StopWithoutLine):
         other.override(self)
         return self
 
-    def __get_base_stop(self):
+    def _get_base_stop(self):
         stop_list: List[str] = self._stop_id.split(':')
         stop_string: str = stop_list[0] + ':' + stop_list[1] + ':' + stop_list[2]
         self._base_stop = Stop(stop_string, self._line, self._name)
 
     def get_base_stop(self):
         if not self._base_stop:
-            self.__get_base_stop()
+            self._get_base_stop()
         return self._base_stop
 

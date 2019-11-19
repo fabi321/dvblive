@@ -13,7 +13,7 @@ class StopResponse(Response):
         Response.__init__(self, elements, dictionary)
         self._lines: [List[Line], None] = None
 
-    def __get_lines(self):
+    def _get_lines(self):
         self._lines_trias_id: List[str] = select(self._elements, construct_xpath(False, False, False, XPaths.line_trias_id), namespaces=self._namespaces)
         self._lines_number: List[str] = select(self._elements, construct_xpath(False, False, False, XPaths.line_number), namespaces=self._namespaces)
         self._lines_string: List[str] = select(self._elements, construct_xpath(False, False, False, XPaths.line_string), namespaces=self._namespaces)
@@ -33,10 +33,10 @@ class StopResponse(Response):
 
     def get_lines(self) -> List[Line]:
         if not self._lines:
-            self.__get_lines()
+            self._get_lines()
         return self._lines
 
     def __len__(self) -> int:
         if not self._lines:
-            self.__get_lines()
+            self._get_lines()
         return len(self._lines)

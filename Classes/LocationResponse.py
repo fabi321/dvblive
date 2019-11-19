@@ -11,7 +11,7 @@ class LocationResponse(Response):
         Response.__init__(self, elements, dictionary)
         self._lat: [float, None] = None
 
-    def __get_cords(self):
+    def _get_cords(self):
         lat = select(self._elements, XPaths.location_lon, namespaces=self._namespaces)
         self._lat: float = float(lat[0]) if lat else None
         lon = select(self._elements, XPaths.location_lat, namespaces=self._namespaces)
@@ -19,5 +19,5 @@ class LocationResponse(Response):
 
     def get_cords(self) -> Location:
         if not self._lat:
-            self.__get_cords()
+            self._get_cords()
         return {'latitude': self._lat, 'longitude': self._lon}

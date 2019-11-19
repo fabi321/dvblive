@@ -32,6 +32,9 @@ class TripResponse(Response):
             lineref = False
         lats = construct_xpath(True, lineref, True, XPaths.lats)
         lons = construct_xpath(True, lineref, True, XPaths.lons)
+        if lineref:
+            lats = lats.replace('$LINEREF', self._predefined_line_trias_id)
+            lons = lons.replace('$LINEREF', self._predefined_line_trias_id)
         self._lons: List[str] = select(self._elements, lats, namespaces=self._namespaces)
         self._lats: List[str] = select(self._elements, lons, namespaces=self._namespaces)
         self._locations: List[Location] = []
@@ -52,9 +55,13 @@ class TripResponse(Response):
             lineref = True
         else:
             lineref = False
-        line_number = construct_xpath(True, lineref, True, XPaths.line_number)
-        line_string = construct_xpath(True, lineref, True, XPaths.line_string)
-        line_trias_id = construct_xpath(True, lineref, True, XPaths.line_trias_id)
+        line_number: str = construct_xpath(True, lineref, True, XPaths.line_number)
+        line_string: str = construct_xpath(True, lineref, True, XPaths.line_string)
+        line_trias_id: str = construct_xpath(True, lineref, True, XPaths.line_trias_id)
+        if lineref:
+            line_number = line_number.replace('$LINEREF', self._predefined_line_trias_id)
+            line_trias_id = line_trias_id.replace('$LINEREF', self._predefined_line_trias_id)
+            line_string = line_string.replace('$LINEREF', self._predefined_line_trias_id)
         line_number: List[str] = select(self._elements, line_number, namespaces=self._namespaces)
         self._line_number: int = int(line_number[0]) if line_number else None
         line_string: List[str] = select(self._elements, line_string, namespaces=self._namespaces)
@@ -77,6 +84,8 @@ class TripResponse(Response):
         else:
             lineref = False
         stops = construct_xpath(True, lineref, True, XPaths.stops)
+        if lineref:
+            stops = stops.replace('$LINEREF', self._predefined_line_trias_id)
         self._stops: List[str] = select(self._elements, stops, namespaces=self._namespaces)
 
     def get_stops(self) -> List[Stop]:

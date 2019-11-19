@@ -13,7 +13,7 @@ line_start: str = "/descendant::ServiceSection/../OriginStopPointRef/text()"#rep
 line_end: str = "/descendant::ServiceSection/../DestinationStopPointRef/text()"#replace(., '([a-z]*:[0-9]*:[0-9]*):.*', '$1')"
 
 
-def construct_xpath(trip: bool, lineref: bool, single: bool, original_string):
+def construct_xpath(trip: bool, lineref: bool, single: bool, original_string) -> str:
     if trip:
         temp_pre = prefix
     else:

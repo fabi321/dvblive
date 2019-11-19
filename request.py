@@ -57,6 +57,8 @@ def parallelise(function: Any, args: List[List[Any]], kwargs: List[Dict[str, Any
 
 
 def request_location_informaiton(stop: Stop, debug: bool = False):
+    if stop.has_location():
+        return
     request: str = xml_requests.location_information_request_stop.replace('$STATION', str(stop))
     while True:
         r = requests.post(url, request, headers=headers)
@@ -83,7 +85,7 @@ def stop_request(stop: Stop, request_time: int, number: int, debug: bool = False
     return request_element
 
 
-def trip_request(start_stop: Stop, end_stop: Stop, request_time: int, polygons: bool = False, debug: bool = False, id: str = None, **kwargs):
+def trip_request(start_stop: Stop, end_stop: Stop, request_time: int, return_tree: bool = False, polygons: bool = False, debug: bool = False, id: str = None, **kwargs):
     request_time = unix_time_to_iso(request_time)
     request: str = xml_requests.trip_request.replace('$START_ID', str(start_stop))
     request = request.replace('$STOP_ID', str(end_stop))
@@ -99,6 +101,8 @@ def trip_request(start_stop: Stop, end_stop: Stop, request_time: int, polygons: 
         else:
             time.sleep(1)
     tree: List[ElementTree.ElementTree] = ElementTree.fromstring(r.content)
+    if return_tree:
+        return tree
     request_element: TripResponse = TripResponse(tree, **kwargs)
     if debug:
         request_element.get_stops()

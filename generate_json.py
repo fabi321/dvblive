@@ -37,7 +37,7 @@ def generate_json(tuple: output_format) -> Tuple[str, str]:
     logger.info('Generating haltestellen json.')
     for i in stops:
         entry: Dict[str, str] = {}
-        entry.update({'triasCode': str(i)})
+        entry.update({'triasCode': str(i), 'stopName': i.get_name()})
         entry.update(i.get_location())
         haltestellen.append(entry)
     haltestellen_json = json.dumps(haltestellen)

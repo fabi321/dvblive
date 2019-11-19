@@ -84,9 +84,12 @@ class TripResponse(Response):
         else:
             lineref = False
         stops = construct_xpath(True, lineref, True, XPaths.stops)
+        stop_names = construct_xpath(True, lineref, True, XPaths.stop_names)
         if lineref:
             stops = stops.replace('$LINEREF', self._predefined_line_trias_id)
+            stop_names = stop_names.replace('$LINEREF', self._predefined_line_trias_id)
         self._stops: List[str] = select(self._elements, stops, namespaces=self._namespaces)
+        self._stop_names: List[str] = select(self._elements, stop_names, namespaces=self._namespaces)
 
     def get_stops(self) -> List[Stop]:
         if not self._ready_stops:
@@ -95,8 +98,8 @@ class TripResponse(Response):
             if not self._line:
                 self.__get_line()
             self._ready_stops: List[Stop] = []
-            for i in self._stops:
-                self._ready_stops.append(Stop(i, [self._line]))
+            for i in range(len(self._stops)):
+                self._ready_stops.append(Stop(self._stops[i], [self._line], self._stop_names[i]))
         return self._ready_stops
 
     def __get_sections(self):

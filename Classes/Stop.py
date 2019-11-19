@@ -5,8 +5,9 @@ from Classes.LocationResponse import LocationResponse
 
 
 class StopWithoutLine:
-    def __init__(self, stop_id: str):
+    def __init__(self, stop_id: str, name: str):
         self._stop_id: str = stop_id
+        self._name: str = name
         self._location: [Location, None] = None
         self._base_stop: [StopWithoutLine, None] = None
 
@@ -40,10 +41,13 @@ class StopWithoutLine:
             self.__get_base_stop()
         return self._base_stop
 
+    def get_name(self) -> str:
+        return self._name
+
 
 class Stop(StopWithoutLine):
-    def __init__(self, stop_id: str, line: List[Line]):
-        StopWithoutLine.__init__(self, stop_id)
+    def __init__(self, stop_id: str, line: List[Line], name: str):
+        StopWithoutLine.__init__(self, stop_id, name)
         self._line: List[Line] = line
         self._base_stop: [Stop, None] = None
 
@@ -71,7 +75,7 @@ class Stop(StopWithoutLine):
     def __get_base_stop(self):
         stop_list: List[str] = self._stop_id.split(':')
         stop_string: str = stop_list[0] + ':' + stop_list[1] + ':' + stop_list[2]
-        self._base_stop = Stop(stop_string, self._line)
+        self._base_stop = Stop(stop_string, self._line, self._name)
 
     def get_base_stop(self):
         if not self._base_stop:

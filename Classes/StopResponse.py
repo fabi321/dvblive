@@ -18,15 +18,17 @@ class StopResponse(Response):
         self._lines_number: List[str] = select(self._elements, construct_xpath(False, False, False, XPaths.line_number), namespaces=self._namespaces)
         self._lines_string: List[str] = select(self._elements, construct_xpath(False, False, False, XPaths.line_string), namespaces=self._namespaces)
         self._lines_start: List[str] = select(self._elements, construct_xpath(False, False, False, XPaths.line_start), namespaces=self._namespaces)
+        self._lines_start_name: List[str] = select(self._elements, construct_xpath(False, False, False, XPaths.line_start_name), namespaces=self._namespaces)
         self._lines_end: List[str] = select(self._elements, construct_xpath(False, False, False, XPaths.line_end), namespaces=self._namespaces)
+        self._lines_end_name: List[str] = select(self._elements, construct_xpath(False, False, False, XPaths.line_end_name), namespaces=self._namespaces)
         self._lines: List[Line] = []
         for i in range(len(self._lines_trias_id)):
             trias_id: str = self._lines_trias_id[i]
             number: int = int(self._lines_number[i])
             string: str = self._lines_string[i]
             line: Line = Line(number, string, trias_id)
-            line.add_stop(StopWithoutLine(self._lines_start[i]))
-            line.add_stop(StopWithoutLine(self._lines_end[i]))
+            line.add_stop(StopWithoutLine(self._lines_start[i], self._lines_start_name[i]))
+            line.add_stop(StopWithoutLine(self._lines_end[i], self._lines_end_name[i]))
             self._lines.append(line)
 
     def get_lines(self) -> List[Line]:

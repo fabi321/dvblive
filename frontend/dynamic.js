@@ -35,6 +35,6 @@ getJsonAsync('abschnitte.json')
            fillColor: '#00c1ff',
            fillOpacity: 0.2,
            radius: 20
-		}).addTo(mymap).bindTooltip(data[i].triasCode);
+		}).addTo(mymap).bindTooltip(data[i].stopName);
 	}
 }));

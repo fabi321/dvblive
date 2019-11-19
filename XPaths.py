@@ -6,11 +6,14 @@ first: str = "[1]"
 lons: str = "/descendant::Projection/Position/Longitude/text()"
 lats: str = "/descendant::Projection/Position/Latitude/text()"
 stops: str = "/descendant::TimedLeg/*/StopPointRef/text()"#replace(.,'([a-z]*:[0-9]*:[0-9]*):.*','$1')"
+stop_names: str = "/descendant::TimedLeg/*/StopPointName/Text/text()"
 line_number: str = "/descendant::ServiceSection/PublishedLineName/Text/text()"
 line_string: str = "/descendant::ServiceSection/normalize-space(RouteDescription/Text)"
 line_trias_id: str = "/descendant::ServiceSection/LineRef/text()"
 line_start: str = "/descendant::ServiceSection/../OriginStopPointRef/text()"#replace(., '([a-z]*:[0-9]*:[0-9]*):.*', '$1')"
+line_start_name: str = "/descendant::ServiceSection/../OriginText/Text/text()"#replace(., '([a-z]*:[0-9]*:[0-9]*):.*', '$1')"
 line_end: str = "/descendant::ServiceSection/../DestinationStopPointRef/text()"#replace(., '([a-z]*:[0-9]*:[0-9]*):.*', '$1')"
+line_end_name: str = "/descendant::ServiceSection/../DestinationText/Text/text()"#replace(., '([a-z]*:[0-9]*:[0-9]*):.*', '$1')"
 
 
 def construct_xpath(trip: bool, lineref: bool, single: bool, original_string) -> str:

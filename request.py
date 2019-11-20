@@ -5,7 +5,7 @@ import time
 import datetime
 from typing import List, Dict, Tuple, Any
 from Classes.LocationResponse import LocationResponse
-from Classes.Stop import Stop
+from Classes.StopWithoutLine import StopWithoutLine
 from Classes.StopResponse import StopResponse
 from Classes.TripResponse import TripResponse
 import threading
@@ -56,7 +56,7 @@ def parallelise(function: Any, args: List[List[Any]], kwargs: List[Dict[str, Any
     return output_list
 
 
-def request_location_informaiton(stop: Stop, debug: bool = False):
+def request_location_informaiton(stop: StopWithoutLine, debug: bool = False):
     if stop.has_location():
         return
     request: str = xml_requests.location_information_request_stop.replace('$STATION', str(stop))
@@ -70,7 +70,7 @@ def request_location_informaiton(stop: Stop, debug: bool = False):
     stop.set_location(request_element.get_cords())
 
 
-def stop_request(stop: Stop, request_time: int, number: int, return_tree: bool = False, debug: bool = False, **kwargs):
+def stop_request(stop: StopWithoutLine, request_time: int, number: int, return_tree: bool = False, debug: bool = False, **kwargs):
     request: str = xml_requests.stop_request.replace('$STATION', str(stop))
     request_time: str = unix_time_to_iso(request_time)
     request = request.replace('$TIME', request_time)
@@ -87,7 +87,7 @@ def stop_request(stop: Stop, request_time: int, number: int, return_tree: bool =
     return request_element
 
 
-def trip_request(start_stop: Stop, end_stop: Stop, request_time: int, return_tree: bool = False, polygons: bool = False, debug: bool = False, id: str = None, **kwargs):
+def trip_request(start_stop: StopWithoutLine, end_stop: StopWithoutLine, request_time: int, return_tree: bool = False, polygons: bool = False, debug: bool = False, id: str = None, **kwargs):
     request_time = unix_time_to_iso(request_time)
     request: str = xml_requests.trip_request.replace('$START_ID', str(start_stop))
     request = request.replace('$STOP_ID', str(end_stop))
@@ -127,8 +127,8 @@ def stop_name_request(name: str):
     return tree
 
 
-def parallel_location(stops: List[Stop], debug: bool = False, threads: int = 20):
-    args: List[List[Stop]] = []
+def parallel_location(stops: List[StopWithoutLine], debug: bool = False, threads: int = 20):
+    args: List[List[StopWithoutLine]] = []
     for i in stops:
         args.append([i])
     parallelise(request_location_informaiton, args, [{'debug': debug}], threads=threads)

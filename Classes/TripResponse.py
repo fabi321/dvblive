@@ -2,7 +2,7 @@ from typing import List
 from xml.etree import ElementTree
 from elementpath import select
 import XPaths
-from XPaths import construct_xpath
+from XPaths import construct_simple_xpath
 from Classes import Location
 from Classes.Line import Line
 from Classes.Response import Response
@@ -30,8 +30,8 @@ class TripResponse(Response):
             lineref = True
         else:
             lineref = False
-        lats = construct_xpath(True, lineref, True, XPaths.lats)
-        lons = construct_xpath(True, lineref, True, XPaths.lons)
+        lats = construct_simple_xpath(True, lineref, True, XPaths.lats)
+        lons = construct_simple_xpath(True, lineref, True, XPaths.lons)
         if lineref:
             lats = lats.replace('$LINEREF', self._predefined_line_trias_id)
             lons = lons.replace('$LINEREF', self._predefined_line_trias_id)
@@ -55,9 +55,9 @@ class TripResponse(Response):
             lineref = True
         else:
             lineref = False
-        line_number: str = construct_xpath(True, lineref, True, XPaths.line_number)
-        line_string: str = construct_xpath(True, lineref, True, XPaths.line_string)
-        line_trias_id: str = construct_xpath(True, lineref, True, XPaths.line_trias_id)
+        line_number: str = construct_simple_xpath(True, lineref, True, XPaths.line_number)
+        line_string: str = construct_simple_xpath(True, lineref, True, XPaths.line_string)
+        line_trias_id: str = construct_simple_xpath(True, lineref, True, XPaths.line_trias_id)
         if lineref:
             line_number = line_number.replace('$LINEREF', self._predefined_line_trias_id)
             line_trias_id = line_trias_id.replace('$LINEREF', self._predefined_line_trias_id)
@@ -83,8 +83,8 @@ class TripResponse(Response):
             lineref = True
         else:
             lineref = False
-        stops = construct_xpath(True, lineref, True, XPaths.stops)
-        stop_names = construct_xpath(True, lineref, True, XPaths.stop_names)
+        stops = construct_simple_xpath(True, lineref, True, XPaths.stops)
+        stop_names = construct_simple_xpath(True, lineref, True, XPaths.stop_names)
         if lineref:
             stops = stops.replace('$LINEREF', self._predefined_line_trias_id)
             stop_names = stop_names.replace('$LINEREF', self._predefined_line_trias_id)

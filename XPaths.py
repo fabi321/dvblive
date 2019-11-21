@@ -45,6 +45,8 @@ paths: Dict[str, Tuple[str, str]] = {
     'lats': ("Position/Latitude/text()", projection),
     'stops': ("*/StopPointRef/text()", timed_leg),
     'stop_names': ("*/StopPointName/Text/text()", timed_leg),
+    'timetable_times': ("*/ServiceArrival/TimetabledTime/text()", timed_leg),
+    'estimated_times': ("*/ServiceArrival/EstimatedTime/text()", timed_leg),
     'line_number': ("PublishedLineName/Text/text()", service_section),
     'line_string': ("normalize-space(RouteDescription/Text)", service_section),
     'line_trias_id': ("LineRef/text()", service_section),

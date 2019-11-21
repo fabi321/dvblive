@@ -24,6 +24,7 @@ stop_name_name: str = "/descendant::StopPointName/Text/text()"
 service_section: str = "/descendant::ServiceSection"
 projection: str = "/descendant::Projection"
 timed_leg: str = "/descendant::TimedLeg"
+this_call: str = "/descendant::ThisCall"
 
 def construct_simple_xpath(trip: bool, lineref: bool, single: bool, original_string, lineref_name: str = None) -> str:
     if trip:
@@ -79,6 +80,8 @@ def construct_complex_xpath(type: str, lineref: bool, single: bool, *args: str, 
             for i in range(len(xpaths)):
                 extension += prefixes[i] + '/' + xpaths[i] + ", ' # ', "
             extension = extension[:-9] + ')'
+        if type == 'StopEvent':
+            extension = extension.replace(timed_leg, this_call)
         return construct_simple_xpath(trip, lineref, single, extension, lineref_name=lineref_name)
     else:
         raise NotImplementedError('Unknown type ' + type + ' at construct_complex_xpath.')

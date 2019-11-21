@@ -25,3 +25,26 @@ class Journey:
 
     def get_times(self) -> List[Time]:
         return self._times
+
+    def override(self, other):
+        if not isinstance(other, Journey):
+            raise NotImplementedError('Tried to override Journey with ' + str(type(other)))
+        self = other
+
+    def __str__(self) -> str:
+        return self._trias_id
+
+    def __eq__(self, other):
+        if not isinstance(other, Journey):
+            raise NotImplementedError('Tried to compare Journey with ' + str(type(other)))
+        return self.__str__() == str(other)
+
+    def __add__(self, other):
+        if not isinstance(other, Journey):
+            raise NotImplementedError('Tried to add Journey with ' + str(type(other)))
+        if self != other:
+            raise NotImplementedError('Tried to add ' + self.__str__() + ' with ' + str(other))
+        self.add_times(other.get_times())
+        other.override(self)
+        return self
+

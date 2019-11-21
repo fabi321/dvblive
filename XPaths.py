@@ -54,7 +54,8 @@ paths: Dict[str, Tuple[str, str]] = {
     'line_start': ("../OriginText/Text/text()", service_section),
     'line_start_name': ("../OriginText/Text/text()", service_section),
     'line_end': ("../DestinationStopPointRef/text()", service_section),
-    'line_end_name': ("../DestinationText/Text/text()", service_section)
+    'line_end_name': ("../DestinationText/Text/text()", service_section),
+    'journey_ref': ("../JourneyRef/text()", service_section)
 }
 
 def construct_complex_xpath(type: str, lineref: bool, single: bool, *args: str, lineref_name: str = None) -> str:

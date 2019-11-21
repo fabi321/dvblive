@@ -39,6 +39,8 @@ class Time:
     def __add__(self, other):
         if not isinstance(other, Time):
             raise NotImplementedError('Tried to add Times with ' + str(type(other)))
+        if self != other:
+            raise NotImplementedError('Tried to merge ' + self.__str__() + ' with ' + str(other))
         self._planned = other.get_planned()
         self._estimated = other.get_estimated()
         other.override(self)

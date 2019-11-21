@@ -71,7 +71,7 @@ stop_request: str = """<?xml version="1.0" encoding="UTF-8"?>
         </Location>
         <Params>
           <NumberOfResults>$NUMBER_OF_RESULTS</NumberOfResults>
-          <StopEventType>departure</StopEventType>
+          <StopEventType>arrival</StopEventType>
           <IncludePreviousCalls>false</IncludePreviousCalls>
           <IncludeOnwardCalls>false</IncludeOnwardCalls>
           <IncludeRealtimeData>true</IncludeRealtimeData>

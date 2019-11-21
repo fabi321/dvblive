@@ -14,8 +14,8 @@ logger: logging.Logger = logging.getLogger('TripResponse')
 
 
 class TripResponse(Response):
-    def __init__(self, elements: List[ElementTree.ElementTree], dictionary: bool = False, line_trias_id: str = None):
-        Response.__init__(self, elements, dictionary)
+    def __init__(self, elements: List[ElementTree.ElementTree], **kwargs):
+        Response.__init__(self, elements, **kwargs)
         self._locations: [List[Location], None] = None
         self._ready_stops: [List[Stop], None] = None
         self._stops: [List[str], None] = None
@@ -23,7 +23,7 @@ class TripResponse(Response):
         self._sections: [List[Section], None] = None
         self._lons: [List[str], None] = None
         self._lats: [List[str], None] = None
-        self._predefined_line_trias_id = line_trias_id
+        self._predefined_line_trias_id = kwargs.get('line_trias_id')
 
     def _get_cords(self):
         if self._predefined_line_trias_id:

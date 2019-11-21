@@ -2,15 +2,15 @@ from typing import List
 from xml.etree import ElementTree
 from elementpath import select
 import XPaths
-from XPaths import construct_simple_xpath
+from XPaths import construct_simple_xpath, construct_complex_xpath
 from Classes.Line import Line
 from Classes.Response import Response
 from Classes.StopWithoutLine import StopWithoutLine
 
 
 class StopResponse(Response):
-    def __init__(self, elements: List[ElementTree.ElementTree], dictionary: bool = False):
-        Response.__init__(self, elements, dictionary)
+    def __init__(self, elements: List[ElementTree.ElementTree], **kwargs):
+        Response.__init__(self, elements, **kwargs)
         self._lines: [List[Line], None] = None
 
     def _get_lines(self):

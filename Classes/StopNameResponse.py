@@ -7,8 +7,8 @@ import XPaths
 
 
 class StopNameResponse(Response):
-    def __init__(self, elements: List[ElementTree.ElementTree], dictionary: bool = False):
-        Response.__init__(self, elements, dictionary)
+    def __init__(self, elements: List[ElementTree.ElementTree], **kwargs):
+        Response.__init__(self, elements, **kwargs)
         self._stop: [StopWithoutLine, None] = None
 
     def _get_stop(self):

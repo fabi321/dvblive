@@ -4,10 +4,10 @@ from typing import List
 
 
 class Journey:
-    def __init__(self, line: Line, trias_id: str, times: List[Time] = None):
+    def __init__(self, line: Line, trias_id: str, **kwargs):
         self._line: Line = line
         self._trias_id: str = trias_id
-        self._times: List[Time] = times
+        self._times: List[Time] = kwargs.get('times')
 
     def add_time(self, time: Time):
         self._times.append(time)

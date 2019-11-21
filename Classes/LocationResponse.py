@@ -7,8 +7,8 @@ from Classes.Response import Response
 
 
 class LocationResponse(Response):
-    def __init__(self, elements: List[ElementTree.ElementTree], dictionary: bool = False):
-        Response.__init__(self, elements, dictionary)
+    def __init__(self, elements: List[ElementTree.ElementTree], **kwargs):
+        Response.__init__(self, elements, **kwargs)
         self._lat: [float, None] = None
 
     def _get_cords(self):

@@ -9,7 +9,7 @@ from Classes.StopWithoutLine import StopWithoutLine
 from Classes.StopResponse import StopResponse
 from Classes.TripResponse import TripResponse
 import threading
-import queue
+from multiprocessing import Pool
 
 queue_lock: threading.Lock = threading.Lock()
 
@@ -24,36 +24,20 @@ def unix_time_to_iso(input_time: int) -> str:
     return input_time.replace(tzinfo=datetime.timezone(offset=utc_offset)).isoformat()
 
 
-class Parallelise(threading.Thread):
-    def __init__(self, q: queue.Queue):
-        threading.Thread.__init__(self)
-        self._q: queue.Queue = q
-
-    def run(self):
-        while not self._q.empty():
-            queue_lock.acquire()
-            data: Tuple[Any, List[Any], Dict[str, Any], List[Any]] = self._q.get()
-            queue_lock.release()
-            data[3].append(data[0](*data[1], **data[2]))
+def worker(args_kwargs: Tuple[Any, List[Any], Dict[str, Any]]):
+    return args_kwargs[0](*args_kwargs[1], **args_kwargs[2])
 
 
 def parallelise(function: Any, args: List[List[Any]], kwargs: List[Dict[str, Any]], threads: int = 20):
-    work_queue: queue.Queue = queue.Queue()
-    thread_list: List[Parallelise] = []
-    output_list: List[Any] = []
+    worker_list: List[Tuple[Any, List[Any], Dict[str, Any]]] = []
     if len(kwargs) == 1:
         for i in args:
-            work_queue.put((function, i, kwargs[0], output_list))
+            worker_list.append((function, i, kwargs[0]))
     else:
         for i in range(len(args)):
-            work_queue.put((function, args[i], kwargs[i], output_list))
-    for i in range(threads):
-        thread = Parallelise(work_queue)
-        thread.start()
-        thread_list.append(thread)
-    for i in thread_list:
-        i.join()
-    return output_list
+            worker_list.append((function, args[i], kwargs[i]))
+    with Pool(threads) as p:
+        return p.map(worker, worker_list)
 
 
 def request_location_informaiton(stop: StopWithoutLine, debug: bool = False):
@@ -68,6 +52,7 @@ def request_location_informaiton(stop: StopWithoutLine, debug: bool = False):
     tree: List[ElementTree.ElementTree] = ElementTree.fromstring(r.content)
     request_element: LocationResponse = LocationResponse(tree)
     stop.set_location(request_element.get_cords())
+    return stop
 
 
 def stop_request(stop: StopWithoutLine, request_time: int, number: int, return_tree: bool = False, debug: bool = False, **kwargs):
@@ -131,7 +116,7 @@ def parallel_location(stops: List[StopWithoutLine], debug: bool = False, threads
     args: List[List[StopWithoutLine]] = []
     for i in stops:
         args.append([i])
-    parallelise(request_location_informaiton, args, [{'debug': debug}], threads=threads)
+    return parallelise(request_location_informaiton, args, [{'debug': debug}], threads=threads)
 
 
 def parallel_stop(data: List[List[Any]], debug: bool = False, threads: int = 20):

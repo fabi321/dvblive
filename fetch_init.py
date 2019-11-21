@@ -49,7 +49,7 @@ def fetch_init(debug: bool = False) -> output_format:
                 unique_stops[index] += i
     logger.info('Got ' + str(len(unique_stops)) + ' Stops from lines')
     logger.info('Getting locations for stops')
-    parallel_location(unique_stops)
+    unique_stops = parallel_location(unique_stops)
     logger.info('Got locations for ' + str(len(unique_stops)) + ' stops')
     logger.info('Uniquifying lines in stops')
     for i in unique_stops:
@@ -73,7 +73,7 @@ def fetch_init(debug: bool = False) -> output_format:
                        request_time])
         kwargs.append({'debug': debug, 'id': i, 'polygons': True, 'line_trias_id': str(j.get_lines()[0])})
     logger.info('Getting polygons for section')
-    polygons: List[Tuple[str, TripResponse]] = parallel_trip(trips, threads=request_parallelisation, kwargs=kwargs)
+    polygons: List[Tuple[str, TripResponse]] = parallel_trip(trips, threads=request_parallelisation * 2, kwargs=kwargs)
     logger.info('Got polygons for ' + str(len(unique_sections)) + ' sections.')
     logger.info('Apylying polygons to sections')
     for i in polygons:

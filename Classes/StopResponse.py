@@ -1,8 +1,6 @@
-from typing import List
+from typing import List, Dict, Any
 from xml.etree import ElementTree
-from elementpath import select
-import XPaths
-from XPaths import construct_simple_xpath, construct_complex_xpath
+from XPaths import construct_complex_xpath
 from Classes.Line import Line
 from Classes.Response import Response
 from Classes.StopWithoutLine import StopWithoutLine
@@ -16,23 +14,19 @@ class StopResponse(Response):
         self._lines: [List[Line], None] = None
         self._journeys: [List[Journey], None] = None
         self._stop: [StopWithoutLine, None] = None
+        self._kwargs: Dict[str, Any] = {'tree': self._elements, 'namespaces': self._namespaces}
 
     def _get_lines(self):
-        self._lines_trias_id: List[str] = select(self._elements, construct_simple_xpath(False, False, False, XPaths.line_trias_id), namespaces=self._namespaces)
-        self._lines_number: List[str] = select(self._elements, construct_simple_xpath(False, False, False, XPaths.line_number), namespaces=self._namespaces)
-        self._lines_string: List[str] = select(self._elements, construct_simple_xpath(False, False, False, XPaths.line_string), namespaces=self._namespaces)
-        self._lines_start: List[str] = select(self._elements, construct_simple_xpath(False, False, False, XPaths.line_start), namespaces=self._namespaces)
-        self._lines_start_name: List[str] = select(self._elements, construct_simple_xpath(False, False, False, XPaths.line_start_name), namespaces=self._namespaces)
-        self._lines_end: List[str] = select(self._elements, construct_simple_xpath(False, False, False, XPaths.line_end), namespaces=self._namespaces)
-        self._lines_end_name: List[str] = select(self._elements, construct_simple_xpath(False, False, False, XPaths.line_end_name), namespaces=self._namespaces)
+        complex_string: List[str] = construct_complex_xpath('StopEvent', False, False, 'line_trias_id', 'line_number', 'line_string', 'line_start', 'line_start_name', 'line_end', 'line_end_name', **self._kwargs)
         self._lines: List[Line] = []
-        for i in range(len(self._lines_trias_id)):
-            trias_id: str = self._lines_trias_id[i]
-            number: int = int(self._lines_number[i])
-            string: str = self._lines_string[i]
+        for i in complex_string:
+            list: List[str] = i.split(' # ')
+            trias_id: str = list[0]
+            number: int = int(list[1])
+            string: str = list[2]
             line: Line = Line(number, string, trias_id)
-            line.add_stop(StopWithoutLine(self._lines_start[i], self._lines_start_name[i]))
-            line.add_stop(StopWithoutLine(self._lines_end[i], self._lines_end_name[i]))
+            line.add_stop(StopWithoutLine(list[3], list[4]))
+            line.add_stop(StopWithoutLine(list[5], list[6]))
             self._lines.append(line)
 
     def get_lines(self) -> List[Line]:
@@ -46,8 +40,7 @@ class StopResponse(Response):
         return len(self._lines)
 
     def _get_stop(self):
-        xpath = construct_complex_xpath('StopEvent', False, False, 'stops', 'stop_names')
-        complex_string: str = select(self._elements, xpath, namespaces=self._namespaces)[0]
+        complex_string: str = construct_complex_xpath('StopEvent', False, False, 'stops', 'stop_names', **self._kwargs)[0]
         seperate = complex_string.split(' # ')
         self._stop: StopWithoutLine = StopWithoutLine(*seperate)
 
@@ -57,8 +50,7 @@ class StopResponse(Response):
             self._get_lines()
         if not self._stop:
             self._get_stop()
-        xpath = construct_complex_xpath('StopEvent', False, False, 'line_trias_id', 'journey_ref', 'timetable_times', 'estimated_times')
-        complex_string: List[str] = select(self._elements, xpath, namespaces=self._namespaces)
+        complex_string: List[str] = construct_complex_xpath('StopEvent', False, False, 'line_trias_id', 'journey_ref', 'timetable_times', 'estimated_times', **self._kwargs)
         for i in complex_string:
             seperate: List[str] = i.split(' # ')
             line: [Line, None] = None

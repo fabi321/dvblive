@@ -11,7 +11,7 @@ getJsonAsync('abschnitte.json')
 		var verbindung = data[i];
 		var latlngs = [];
 		for (latlon_count = 0; latlon_count < verbindung.polygon.length; latlon_count++){
-		    latlngs.push([verbindung.polygon[latlon_count].longitude, verbindung.polygon[latlon_count].latitude])
+		    latlngs.push([verbindung.polygon[latlon_count].latitude, verbindung.polygon[latlon_count].longitude])
 		}
 		var tooltip = "";
 		for (tooltip_count = 0; tooltip_count < verbindung.linien.length; tooltip_count++){
@@ -30,7 +30,7 @@ getJsonAsync('abschnitte.json')
 	.then(function(data) {
 	for (i = 0; i < data.length; i++){
 		var aktuelle_haltestelle = data[i]
-        L.circle([aktuelle_haltestelle.longitude, aktuelle_haltestelle.latitude], {
+        L.circle([aktuelle_haltestelle.latitude, aktuelle_haltestelle.longitude], {
            color: 'blue',
            fillColor: '#00c1ff',
            fillOpacity: 0.2,

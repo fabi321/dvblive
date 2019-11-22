@@ -1,8 +1,8 @@
-from typing import List
+from typing import List, Dict, Any
 from xml.etree import ElementTree
 from elementpath import select
 import XPaths
-from XPaths import construct_simple_xpath
+from XPaths import construct_complex_xpath
 from Classes import Location
 from Classes.Line import Line
 from Classes.Response import Response
@@ -24,22 +24,20 @@ class TripResponse(Response):
         self._lons: [List[str], None] = None
         self._lats: [List[str], None] = None
         self._predefined_line_trias_id = kwargs.get('line_trias_id')
+        self._kwargs: Dict[str, Any] = {'tree': self._elements, 'namespaces': self._namespaces}
+        if self._predefined_line_trias_id:
+            self._kwargs.update({'lineref': self._predefined_line_trias_id})
 
     def _get_cords(self):
         if self._predefined_line_trias_id:
-            lineref = True
+            is_lineref = True
         else:
-            lineref = False
-        lats = construct_simple_xpath(True, lineref, True, XPaths.lats)
-        lons = construct_simple_xpath(True, lineref, True, XPaths.lons)
-        if lineref:
-            lats = lats.replace('$LINEREF', self._predefined_line_trias_id)
-            lons = lons.replace('$LINEREF', self._predefined_line_trias_id)
-        self._lons: List[str] = select(self._elements, lats, namespaces=self._namespaces)
-        self._lats: List[str] = select(self._elements, lons, namespaces=self._namespaces)
+            is_lineref = False
+        complex_string: List[str] = construct_complex_xpath('Trip', is_lineref, True, 'lats', 'lons', **self._kwargs)
         self._locations: List[Location] = []
-        for i in range(len(self._lons)):
-            self._locations.append({'latitude': float(self._lats[i]), 'longitude': float(self._lons[i])})
+        for i in complex_string:
+            list: List[str] = i.split(' # ')
+            self._locations.append({'latitude': float(list[0]), 'longitude': float(list[1])})
         for i in range(len(self._locations) - 1, 1, -1):
             if self._locations.count(self._locations[i]) > 1:
                 self._locations.pop(i)
@@ -52,23 +50,16 @@ class TripResponse(Response):
 
     def _get_line(self):
         if self._predefined_line_trias_id:
-            lineref = True
+            is_lineref = True
         else:
-            lineref = False
-        line_number: str = construct_simple_xpath(True, lineref, True, XPaths.line_number)
-        line_string: str = construct_simple_xpath(True, lineref, True, XPaths.line_string)
-        line_trias_id: str = construct_simple_xpath(True, lineref, True, XPaths.line_trias_id)
-        if lineref:
-            line_number = line_number.replace('$LINEREF', self._predefined_line_trias_id)
-            line_trias_id = line_trias_id.replace('$LINEREF', self._predefined_line_trias_id)
-            line_string = line_string.replace('$LINEREF', self._predefined_line_trias_id)
-        line_number: List[str] = select(self._elements, line_number, namespaces=self._namespaces)
-        self._line_number: int = int(line_number[0]) if line_number else None
-        line_string: List[str] = select(self._elements, line_string, namespaces=self._namespaces)
-        self._line_string: str = line_string[0] if line_string else None
-        line_trias_id: List[str] = select(self._elements, line_trias_id, namespaces=self._namespaces)
-        self._line_trias_id: str = line_trias_id[0] if line_trias_id else None
-        if not self._line_trias_id:
+            is_lineref = False
+        complex_string: List[str] = construct_complex_xpath('Trip', is_lineref, True, 'line_number', 'line_string', 'line_trias_id', **self._kwargs)
+        if len(complex_string) >= 1:
+            list: List[str] = complex_string[0].split(' # ')
+            self._line_number: int = int(list[0])
+            self._line_string: str = list[1]
+            self._line_trias_id: str = list[2]
+        else:
             logger.warning('Empty TripResponse')
             return
         self._line = Line(self._line_number, self._line_string, self._line_trias_id)
@@ -80,16 +71,16 @@ class TripResponse(Response):
 
     def _get_stops(self):
         if self._predefined_line_trias_id:
-            lineref = True
+            is_lineref = True
         else:
-            lineref = False
-        stops = construct_simple_xpath(True, lineref, True, XPaths.stops)
-        stop_names = construct_simple_xpath(True, lineref, True, XPaths.stop_names)
-        if lineref:
-            stops = stops.replace('$LINEREF', self._predefined_line_trias_id)
-            stop_names = stop_names.replace('$LINEREF', self._predefined_line_trias_id)
-        self._stops: List[str] = select(self._elements, stops, namespaces=self._namespaces)
-        self._stop_names: List[str] = select(self._elements, stop_names, namespaces=self._namespaces)
+            is_lineref = False
+        complex_string: List[str] = construct_complex_xpath('Trip', is_lineref, True, 'stops', 'stop_names', **self._kwargs)
+        self._stops: List[str] = []
+        self._stop_names: List[str] = []
+        for i in complex_string:
+            list: List[str] = i.split(' # ')
+            self._stops.append(list[0])
+            self._stop_names.append(list[1])
 
     def get_stops(self) -> List[Stop]:
         if not self._ready_stops:

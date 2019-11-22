@@ -1,5 +1,9 @@
 from typing import Dict, Tuple, List
+from elementpath import select
+from xml.etree import ElementTree
 
+
+elementpath_concat_fixed: bool = False
 
 stoerung: str = "for $x in //StopEvent[descendant::EstimatedTime]/descendant::*[local-name(.)='SituationNumber'] return //PtSituation[*[local-name(.)='SituationNumber'] = $x]/*[local-name(.)='Description']"
 location_lon: str = "//GeoPosition/Longitude/text()"
@@ -22,21 +26,25 @@ stop_name_lon: str = "/descendant::Longitude/text()"
 stop_name_lat: str = "/descendant::Latitude/text()"
 stop_name_name: str = "/descendant::StopPointName/Text/text()"
 service_section: str = "/descendant::ServiceSection"
+service: str = "/descendant::Service"
 projection: str = "/descendant::Projection"
 timed_leg: str = "/descendant::TimedLeg"
 this_call: str = "/descendant::ThisCall"
 
-def construct_simple_xpath(trip: bool, lineref: bool, single: bool, original_string, lineref_name: str = None) -> str:
+def construct_simple_xpath(trip: bool, is_lineref: bool, single: bool, original_string, **kwargs) -> str:
     if trip:
         temp_pre = prefix
     else:
         temp_pre = prefix.replace('TripResult', 'StopEventResult')
-    if lineref:
+    if is_lineref:
         temp_pre = temp_pre.replace('$LINEREF', "[descendant::LineRef='$LINEREF']")
     else:
         temp_pre = temp_pre.replace('$LINEREF', '')
-    if lineref_name:
-        temp_pre = temp_pre.replace('$LINEREF', lineref_name)
+    for i, j in kwargs.items():
+        try:
+            temp_pre = temp_pre.replace('$' + i.upper(), j)
+        except TypeError:
+            pass
     if single:
         return temp_pre + first + original_string
     return temp_pre + original_string
@@ -51,14 +59,48 @@ paths: Dict[str, Tuple[str, str]] = {
     'line_number': ("PublishedLineName/Text/text()", service_section),
     'line_string': ("normalize-space(RouteDescription/Text)", service_section),
     'line_trias_id': ("LineRef/text()", service_section),
-    'line_start': ("../OriginText/Text/text()", service_section),
-    'line_start_name': ("../OriginText/Text/text()", service_section),
-    'line_end': ("../DestinationStopPointRef/text()", service_section),
-    'line_end_name': ("../DestinationText/Text/text()", service_section),
-    'journey_ref': ("../JourneyRef/text()", service_section)
+    'line_start': ("OriginStopPointRef/text()", service),
+    'line_start_name': ("OriginText/Text/text()", service),
+    'line_end': ("DestinationStopPointRef/text()", service),
+    'line_end_name': ("DestinationText/Text/text()", service),
+    'journey_ref': ("JourneyRef/text()", service)
 }
 
-def construct_complex_xpath(type: str, lineref: bool, single: bool, *args: str, lineref_name: str = None) -> str:
+def concat_not_working_workaround(xpath: str, tree: ElementTree.ElementTree, **kwargs):
+    origin, entities = xpath.split('/concat(')
+    entities: str = entities[:-1]
+    entities: List[str] = entities.split(', ')
+    output: List[str] = []
+    regions: List[ElementTree.Element] = select(tree, origin, **kwargs)
+    for i in regions:
+        lists: List[List[str]] = []
+        for j in entities:
+            if j.find("'") == -1:
+                temp_result = select(i, j, **kwargs)
+                if isinstance(temp_result, list):
+                    lists.append(temp_result)
+                else:
+                    lists.append([temp_result])
+            else:
+                lists.append([j.replace("'", '')])
+        length: int = 0
+        for j in lists:
+            if len(j) > length:
+                length = len(j)
+        output_list: List[str] = []
+        for j in range(length):
+            string: str = ''
+            for k in lists:
+                if len(k) > 1:
+                    string += k[j]
+                elif len(k) == 1:
+                    string += k[0]
+            output_list.append(string)
+        output += output_list
+    return output
+
+
+def construct_complex_xpath(type: str, is_lineref: bool, single: bool, *args: str, tree: ElementTree.ElementTree, **kwargs) -> List[str]:
     if not args:
         raise NotImplementedError('Tried to run construct_complex_xpath without xpath names')
     if type == 'StopEvent' or type == 'Trip':
@@ -79,10 +121,14 @@ def construct_complex_xpath(type: str, lineref: bool, single: bool, *args: str, 
         else:
             extension = '/concat('
             for i in range(len(xpaths)):
-                extension += prefixes[i] + '/' + xpaths[i] + ", ' # ', "
+                extension += prefixes[i][1:] + '/' + xpaths[i] + ", ' # ', "
             extension = extension[:-9] + ')'
         if type == 'StopEvent':
             extension = extension.replace(timed_leg, this_call)
-        return construct_simple_xpath(trip, lineref, single, extension, lineref_name=lineref_name)
+        xpath = construct_simple_xpath(trip, is_lineref, single, extension, **kwargs)
+        elementtree_kwargs: Dict[str, Any] = {'namespaces': kwargs.get('namespaces')}
+        if elementpath_concat_fixed:
+            return select(tree, xpath, **elementtree_kwargs)
+        return concat_not_working_workaround(xpath, tree, **elementtree_kwargs)
     else:
         raise NotImplementedError('Unknown type ' + type + ' at construct_complex_xpath.')

@@ -69,6 +69,11 @@ def stop_request(stop: StopWithoutLine, request_time: int, number: int, **kwargs
     if kwargs.get('return_tree'):
         return tree
     request_element: StopResponse = StopResponse(tree, **kwargs)
+    # pre-calculate elements to save time at not multiprocessed parts
+    if kwargs.get('calculate_lines'):
+        request_element.get_lines()
+    if kwargs.get('calculate_journeys'):
+        request_element.get_journeys()
     return request_element
 
 
@@ -91,10 +96,15 @@ def trip_request(start_stop: StopWithoutLine, end_stop: StopWithoutLine, request
     if kwargs.get('return_tree'):
         return tree
     request_element: TripResponse = TripResponse(tree, **kwargs)
-    if kwargs.get('debug'):
-        request_element.get_stops()
+    # pre-calculate elements to save time at not multiprocessed parts
     if kwargs.get('polygons'):
         request_element.get_cords()
+    if kwargs.get('calculate_lines'):
+        request_element.get_line()
+    if kwargs.get('calculate_stops'):
+        request_element.get_stops()
+    if kwargs.get('calculate_sections'):
+        request_element.get_sections()
     if kwargs.get('id'):
         return kwargs.get('id'), request_element
     return request_element

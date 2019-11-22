@@ -1,7 +1,5 @@
 from typing import List, Dict, Any
 from xml.etree import ElementTree
-from elementpath import select
-import XPaths
 from XPaths import construct_complex_xpath
 from Classes import Location
 from Classes.Line import Line

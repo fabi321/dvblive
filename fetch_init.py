@@ -7,12 +7,14 @@ from Classes.StopResponse import StopResponse
 import datetime
 from request import parallel_location, parallel_stop, parallel_trip
 import logging
+import time
 
 logger: logging.Logger = logging.getLogger('fetch_init')
 output_format = Tuple[List[Line], List[Stop], Dict[str, Section]]
 
 
 def fetch_init(debug: bool = False) -> output_format:
+    start_time: float = time.time()
     request_parallelisation: int = 20
     if debug:
         request_parallelisation: int = 1
@@ -78,5 +80,7 @@ def fetch_init(debug: bool = False) -> output_format:
     logger.info('Apylying polygons to sections')
     for i in polygons:
         unique_sections[i[0]].set_polygon(i[1].get_cords())
+    logger.info('Applied polygons to sections')
+    logger.info('Fetched init_data in ' + str(int(time.time() - start_time)) + ' seconds.')
     return unique_lines, unique_stops, unique_sections
 

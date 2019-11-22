@@ -49,7 +49,7 @@ def fetch_init(debug: bool = False) -> output_format:
                 unique_stops[index] += i
     logger.info('Got ' + str(len(unique_stops)) + ' Stops from lines')
     logger.info('Getting locations for stops')
-    unique_stops = parallel_location(unique_stops)
+    parallel_location(unique_stops)
     logger.info('Got locations for ' + str(len(unique_stops)) + ' stops')
     logger.info('Uniquifying lines in stops')
     for i in unique_stops:

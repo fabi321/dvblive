@@ -11,7 +11,7 @@ import logging
 import time
 
 logger: logging.Logger = logging.getLogger('fetch_init')
-output_format = Tuple[MergeableList, MergeableList, Dict[str, Section]]
+output_format = Tuple[MergeableList, MergeableList, MergeableList]
 
 
 def fetch_init(debug: bool = False) -> output_format:
@@ -57,31 +57,24 @@ def fetch_init(debug: bool = False) -> output_format:
     logger.info('Uniquifying lines in stops')
     for i in unique_stops:
         i.unique_lines()
-    sections: MergeableList = MergeableList([])
+    unique_sections: MergeableList = MergeableList([])
     logger.info('Getting sections from lines')
     for i in lines:
-        sections += i.get_sections()
-    unique_sections: Dict[str, Section] = {}
-    logger.info('Uniquifying sections')
-    for i in sections:
-        try:
-            unique_sections[str(i)] += i
-        except KeyError:
-            unique_sections.update({str(i): i})
-    logger.info('Uniquifyed ' + str(len(unique_sections)) + ' sections.')
+        unique_sections.merge(i.get_sections())
+    logger.info('Got ' + str(len(unique_sections)) + ' sections.')
     trips: List[List[Any]] = []
     kwargs: List[Dict[str, Any]] = []
-    for i, j in unique_sections.items():
-        if j.get_lines():
-            trips.append([j.get_start_stop(), j.get_end_stop(),
+    for i in unique_sections:
+        if i.get_lines():
+            trips.append([i.get_start_stop(), i.get_end_stop(),
                            request_time])
-            kwargs.append({'debug': debug, 'id': i, 'polygons': True, 'line_trias_id': str(j.get_lines()[0])})
+            kwargs.append({'debug': debug, 'id': str(i), 'polygons': True, 'line_trias_id': str(i.get_lines()[0])})
     logger.info('Getting polygons for section')
     polygons: List[Tuple[str, TripResponse]] = parallel_trip(trips, threads=request_parallelisation * 2, kwargs=kwargs)
     logger.info('Got polygons for ' + str(len(unique_sections)) + ' sections.')
     logger.info('Apylying polygons to sections')
     for i in polygons:
-        unique_sections[i[0]].set_polygon(i[1].get_cords())
+        unique_sections[unique_sections.index(i[0])].set_polygon(i[1].get_cords())
     logger.info('Applied polygons to sections')
     logger.info('Fetched init_data in ' + str(int(time.time() - start_time)) + ' seconds.')
     return unique_lines, unique_stops, unique_sections

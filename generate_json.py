@@ -15,20 +15,20 @@ def generate_json(tuple: output_format) -> Tuple[str, str]:
     stops: List[Stop] = tuple[1]
     sections: Dict[str, Section] = tuple[2]
     logger.info('Generating sections json.')
-    for i, j in sections.items():
+    for i in sections:
         entry: Dict[str, object] = {}
-        entry.update({'start': str(j.get_start_stop())})
-        entry.update({'end': str(j.get_end_stop())})
+        entry.update({'start': str(i.get_start_stop())})
+        entry.update({'end': str(i.get_end_stop())})
         entry.update({'maxVerspaetung': 0})
-        start_location: Location = j.get_start_stop().get_location()
+        start_location: Location = i.get_start_stop().get_location()
         entry.update({'startPosition': start_location})
-        end_location: Location = j.get_end_stop().get_location()
+        end_location: Location = i.get_end_stop().get_location()
         entry.update({'startPosition': end_location})
-        polygon: List[Location] = j.get_polygon()
+        polygon: List[Location] = i.get_polygon()
         entry.update({'polygon': polygon})
         lines: List[str] = []
-        for h in j.get_lines():
-            lines.append(str(h.get_line_number()))
+        for j in i.get_lines():
+           lines.append(str(j.get_line_number()))
         entry.update({'linien': lines})
         abschnitte.append(entry)
     abschnitte_json: str = json.dumps(abschnitte)

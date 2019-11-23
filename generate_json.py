@@ -2,24 +2,45 @@ import json
 from typing import Dict, List, Tuple, Any
 from fetch_init import output_format
 from Classes.Line import Line
+from Classes.MergeableList import MergeableList
 from Classes.Stop import Stop
 from Classes.Section import Section
+from Classes.Time import Time
 from Classes import Location
 import logging
+import time
 
 logger = logging.getLogger('generate_json')
 
 
 def generate_json(tuple: output_format) -> Tuple[str, str]:
     abschnitte: List[Dict[str, Any]] = []
-    stops: List[Stop] = tuple[1]
-    sections: Dict[str, Section] = tuple[2]
+    lines: MergeableList = tuple[0]
+    stops: MergeableList = tuple[1]
+    sections: MergeableList = tuple[2]
     logger.info('Generating sections json.')
     for i in sections:
+        times: List[Time] = []
+        for j in lines:
+            if isinstance(j, Line):
+                for k in j.get_stops():
+                    if str(k) in str(i).split('=|='):
+                        times += j.get_journeys_for_section_id(str(i))
+        times_within_half_hour: List[Time] = []
+        for j in times:
+            if j.get_planned() > time.time():
+                times_within_half_hour.append(j)
+        sum: int = 0
+        for j in times_within_half_hour:
+            sum += j.get_difference()
+        if len(times_within_half_hour) >= 1:
+            average: int = int(sum / len(times_within_half_hour))
+        else:
+            average: int = 0
         entry: Dict[str, object] = {}
         entry.update({'start': str(i.get_start_stop())})
         entry.update({'end': str(i.get_end_stop())})
-        entry.update({'maxVerspaetung': 0})
+        entry.update({'maxVerspaetung': average})
         start_location: Location = i.get_start_stop().get_location()
         entry.update({'startPosition': start_location})
         end_location: Location = i.get_end_stop().get_location()

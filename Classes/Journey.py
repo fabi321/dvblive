@@ -1,16 +1,17 @@
-from Classes.Line import Line
 from Classes.Time import Time
 from Classes.MergeableList import MergeableList
+from typing import List
 
 
 class Journey:
-    def __init__(self, line: Line, trias_id: str, **kwargs):
-        self._line: Line = line
+    def __init__(self, line_id: str, trias_id: str, **kwargs):
+        self._line: str = line_id
         self._trias_id: str = trias_id
         self._times: MergeableList = kwargs.get('times')
 
     def add_time(self, time: Time):
         self._times.append(time)
+        self._uniquify()
 
     def _uniquify(self):
         for i in range(len(self._times) - 1, 0, -1):
@@ -25,6 +26,14 @@ class Journey:
 
     def get_times(self) -> MergeableList:
         return self._times
+
+    def get_time_for_section_id(self, section_id: str) -> Time:
+        for i in self._times:
+            if i.get_section_id() == section_id:
+                return i
+
+    def get_line_id(self) -> str:
+        return self._line
 
     def override(self, other):
         if not isinstance(other, Journey):

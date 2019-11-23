@@ -9,8 +9,9 @@ def unix_time_from_time_string(time_string: str) -> int:
 
 
 class Time:
-    def __init__(self, stop: StopWithoutLine, est_time: str, plan_time: str):
+    def __init__(self, stop: StopWithoutLine, est_time: str, plan_time: str, section: str):
         self._stop: StopWithoutLine = stop
+        self._section: str = section
         self._estimated: int = unix_time_from_time_string(est_time)
         self._planned: int = unix_time_from_time_string(plan_time)
 
@@ -22,6 +23,9 @@ class Time:
 
     def get_planned(self) -> int:
         return self._planned
+
+    def get_section_id(self) -> str:
+        return self._section
 
     def override(self, other):
         if not isinstance(other, Time):

@@ -13,7 +13,7 @@ class StopResponse(Response):
     def __init__(self, elements: List[ElementTree.ElementTree], **kwargs):
         Response.__init__(self, elements, **kwargs)
         self._lines: [MergeableList, None] = None
-        self._journeys: [MergeableList, None] = None
+        self._journeys: MergeableList = []
         self._stop: [StopWithoutLine, None] = None
         self._kwargs: Dict[str, Any] = {'tree': self._elements, 'namespaces': self._namespaces}
 
@@ -41,33 +41,34 @@ class StopResponse(Response):
         return len(self._lines)
 
     def _get_stop(self):
-        complex_string: str = construct_complex_xpath('StopEvent', False, False, 'stops', 'stop_names', **self._kwargs)[0]
-        seperate = complex_string.split(' # ')
-        self._stop: StopWithoutLine = StopWithoutLine(*seperate)
+        complex_string: List[str] = construct_complex_xpath('StopEvent', False, False, 'stops', 'stop_names', **self._kwargs)
+        if len(complex_string) >= 1:
+            seperate = complex_string[0].split(' # ')
+            self._stop: StopWithoutLine = StopWithoutLine(*seperate)
 
 
-    def _get_journeys(self):
-        if not self._lines:
-            self._get_lines()
-        if not self._stop:
-            self._get_stop()
+    def _get_journeys(self, sections: MergeableList):
         complex_string: List[str] = construct_complex_xpath('StopEvent', False, False, 'line_trias_id', 'journey_ref', 'timetable_times', 'estimated_times', **self._kwargs)
         for i in complex_string:
             seperate: List[str] = i.split(' # ')
             line: [Line, None] = None
             for i in self._lines:
-                if seperate[0] == i:
+                if seperate[0] == str(i):
                     line = i
-            if not line:
-                raise NotImplementedError('Got different lines from different Xpaths')
-            time: Time = Time(self._stop, seperate[2], seperate[3])
-            self._journeys.append(Journey(line, seperate[1], times=[time]))
+            if line:
+                section_trias_id: str = ''
+                for j in sections:
+                    if str(j).split('=|=')[0] == str(self._stop):
+                        section_trias_id = str(j)
+                if seperate[3]:
+                    time: Time = Time(self._stop, seperate[2], seperate[3], section_trias_id)
+                    self._journeys.append(Journey(str(line), seperate[1], times=[time]))
 
-    def get_journeys(self) -> MergeableList:
+    def get_journeys(self, lines: MergeableList) -> MergeableList:
         if not self._journeys:
             if not self._lines:
                 self._get_lines()
             if not self._stop:
                 self._get_stop()
-            self._get_journeys()
+            self._get_journeys(lines)
         return self._journeys

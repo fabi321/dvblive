@@ -19,7 +19,7 @@ headers = {'Content-Type': 'text/xml'}
 
 
 def unix_time_to_iso(input_time: int) -> str:
-    input_time: datetime.datetime = datetime.datetime.utcfromtimestamp(input_time)
+    input_time: datetime.datetime = datetime.datetime.fromtimestamp(input_time)
     utc_offset_sec = time.altzone if time.localtime().tm_isdst else time.timezone
     utc_offset = datetime.timedelta(seconds=-utc_offset_sec)
     return input_time.replace(tzinfo=datetime.timezone(offset=utc_offset)).isoformat()
@@ -73,8 +73,6 @@ def stop_request(stop: StopWithoutLine, request_time: int, number: int, **kwargs
     # pre-calculate elements to save time at not multiprocessed parts
     if kwargs.get('calculate_lines'):
         request_element.get_lines()
-    if kwargs.get('calculate_journeys'):
-        request_element.get_journeys()
     return request_element
 
 

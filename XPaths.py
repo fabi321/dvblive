@@ -113,7 +113,7 @@ def construct_complex_xpath(type: str, is_lineref: bool, single: bool, *args: st
                 extension += prefixes[i][1:] + '/' + xpaths[i] + ", ' # ', "
             extension = extension[:-9] + ')'
         if type == 'StopEvent':
-            extension = extension.replace(timed_leg, this_call)
+            extension = extension.replace(timed_leg[1:], this_call[1:])
         xpath = construct_simple_xpath(trip, is_lineref, single, extension, **kwargs)
         elementtree_kwargs: Dict[str, Any] = {'namespaces': kwargs.get('namespaces')}
         if elementpath_concat_fixed:

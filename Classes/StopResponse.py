@@ -6,19 +6,20 @@ from Classes.Response import Response
 from Classes.StopWithoutLine import StopWithoutLine
 from Classes.Journey import Journey
 from Classes.Time import Time
+from Classes.MergeableList import MergeableList
 
 
 class StopResponse(Response):
     def __init__(self, elements: List[ElementTree.ElementTree], **kwargs):
         Response.__init__(self, elements, **kwargs)
-        self._lines: [List[Line], None] = None
-        self._journeys: [List[Journey], None] = None
+        self._lines: [MergeableList, None] = None
+        self._journeys: [MergeableList, None] = None
         self._stop: [StopWithoutLine, None] = None
         self._kwargs: Dict[str, Any] = {'tree': self._elements, 'namespaces': self._namespaces}
 
     def _get_lines(self):
         complex_string: List[str] = construct_complex_xpath('StopEvent', False, False, 'line_trias_id', 'line_number', 'line_string', 'line_start', 'line_start_name', 'line_end', 'line_end_name', **self._kwargs)
-        self._lines: List[Line] = []
+        self._lines: MergeableList = MergeableList([])
         for i in complex_string:
             list: List[str] = i.split(' # ')
             trias_id: str = list[0]
@@ -29,7 +30,7 @@ class StopResponse(Response):
             line.add_stop(StopWithoutLine(list[5], list[6]))
             self._lines.append(line)
 
-    def get_lines(self) -> List[Line]:
+    def get_lines(self) -> MergeableList:
         if not self._lines:
             self._get_lines()
         return self._lines
@@ -62,7 +63,7 @@ class StopResponse(Response):
             time: Time = Time(self._stop, seperate[2], seperate[3])
             self._journeys.append(Journey(line, seperate[1], times=[time]))
 
-    def get_journeys(self) -> List[Journey]:
+    def get_journeys(self) -> MergeableList:
         if not self._journeys:
             if not self._lines:
                 self._get_lines()

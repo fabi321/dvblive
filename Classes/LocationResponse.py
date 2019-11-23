@@ -12,9 +12,9 @@ class LocationResponse(Response):
         self._lat: [float, None] = None
 
     def _get_cords(self):
-        lat = select(self._elements, XPaths.location_lon, namespaces=self._namespaces)
+        lat = select(self._elements, XPaths.location_lat, namespaces=self._namespaces)
         self._lat: float = float(lat[0]) if lat else None
-        lon = select(self._elements, XPaths.location_lat, namespaces=self._namespaces)
+        lon = select(self._elements, XPaths.location_lon, namespaces=self._namespaces)
         self._lon: float = float(lon[0]) if lon else None
 
     def get_cords(self) -> Location:

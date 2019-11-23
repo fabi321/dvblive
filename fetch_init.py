@@ -4,13 +4,14 @@ from Classes.TripResponse import TripResponse
 from Classes.Stop import Stop
 from Classes.Section import Section
 from Classes.StopResponse import StopResponse
+from Classes.MergeableList import MergeableList
 import datetime
 from request import parallel_location, parallel_stop, parallel_trip
 import logging
 import time
 
 logger: logging.Logger = logging.getLogger('fetch_init')
-output_format = Tuple[List[Line], List[Stop], Dict[str, Section]]
+output_format = Tuple[MergeableList, MergeableList, Dict[str, Section]]
 
 
 def fetch_init(debug: bool = False) -> output_format:
@@ -27,7 +28,7 @@ def fetch_init(debug: bool = False) -> output_format:
         base_dicts.append([i, request_time, 15])
     logger.info('Getting lines from base stops.')
     lines: List[StopResponse] = parallel_stop(base_dicts, debug=debug, threads=request_parallelisation, calculate_lines=True)
-    unique_lines: List[Line] = []
+    unique_lines: MergeableList = MergeableList([])
     for i in lines:
         for i in i.get_lines():
             if not any([str(i) == str(j) for j in unique_lines]):
@@ -41,7 +42,7 @@ def fetch_init(debug: bool = False) -> output_format:
         kwargs.append({'line_trias_id': str(i), 'debug': debug, 'calculate_stops': True, 'calculate_sections': True})
     logger.info('Getting lines from start and end stops.')
     lines: List[TripResponse] = parallel_trip(trips, debug=debug, threads=request_parallelisation, kwargs=kwargs)
-    unique_stops: List[Stop] = []
+    unique_stops: MergeableList = MergeableList([])
     for i in lines:
         for i in i.get_stops():
             if unique_stops.count(i.get_base_stop()) == 0:
@@ -51,12 +52,12 @@ def fetch_init(debug: bool = False) -> output_format:
                 unique_stops[index] += i
     logger.info('Got ' + str(len(unique_stops)) + ' Stops from lines')
     logger.info('Getting locations for stops')
-    unique_stops = parallel_location(unique_stops)
+    unique_stops.merge(parallel_location(unique_stops))
     logger.info('Got locations for ' + str(len(unique_stops)) + ' stops')
     logger.info('Uniquifying lines in stops')
     for i in unique_stops:
         i.unique_lines()
-    sections: List[Section] = []
+    sections: MergeableList = MergeableList([])
     logger.info('Getting sections from lines')
     for i in lines:
         sections += i.get_sections()
@@ -71,9 +72,10 @@ def fetch_init(debug: bool = False) -> output_format:
     trips: List[List[Any]] = []
     kwargs: List[Dict[str, Any]] = []
     for i, j in unique_sections.items():
-        trips.append([j.get_start_stop(), j.get_end_stop(),
-                       request_time])
-        kwargs.append({'debug': debug, 'id': i, 'polygons': True, 'line_trias_id': str(j.get_lines()[0])})
+        if j.get_lines():
+            trips.append([j.get_start_stop(), j.get_end_stop(),
+                           request_time])
+            kwargs.append({'debug': debug, 'id': i, 'polygons': True, 'line_trias_id': str(j.get_lines()[0])})
     logger.info('Getting polygons for section')
     polygons: List[Tuple[str, TripResponse]] = parallel_trip(trips, threads=request_parallelisation * 2, kwargs=kwargs)
     logger.info('Got polygons for ' + str(len(unique_sections)) + ' sections.')

@@ -1,25 +1,21 @@
 from typing import List
 from Classes.Line import Line
 from Classes.StopWithoutLine import StopWithoutLine
+from Classes.MergeableList import MergeableList
 
 
 class Stop(StopWithoutLine):
-    def __init__(self, stop_id: str, line: List[Line], name: str):
+    def __init__(self, stop_id: str, line: MergeableList, name: str):
         StopWithoutLine.__init__(self, stop_id, name)
-        self._line: List[Line] = line
+        self._line: MergeableList = line
         self._base_stop: [Stop, None] = None
 
-    def get_lines(self) -> List[Line]:
+    def get_lines(self) -> MergeableList:
         return self._line
 
     def unique_lines(self):
         list_set = set(self._line)
         self._line = list(list_set)
-
-    def override(self, stop):
-        if not isinstance(stop, Stop):
-            raise NotImplementedError("Tried to override Stop with " + str(type(stop)))
-        self = stop
 
     def __add__(self, other):
         if not isinstance(other, Stop):
@@ -27,6 +23,8 @@ class Stop(StopWithoutLine):
 #        if str(other) != self.__str__():
 #            raise NotImplementedError("Tried to merge different stops")
         self._line += other.get_lines()
+        if not self.has_location() and other.has_location():
+            self.set_location(other.get_location())
         other.override(self)
         return self
 

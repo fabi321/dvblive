@@ -1,4 +1,4 @@
-from typing import List
+from Classes.MergeableList import MergeableList
 from Classes.StopWithoutLine import StopWithoutLine
 
 class Line:
@@ -7,7 +7,7 @@ class Line:
         self._string: str = string
         self._trias_id: str = trias_id
         assert type(self._trias_id) == str
-        self._stops: [List[StopWithoutLine], None] = None
+        self._stops: [MergeableList, None] = None
 
     def __str__(self) -> str:
         return self._trias_id
@@ -18,7 +18,7 @@ class Line:
         else:
             self._stops.append(stop)
 
-    def get_stops(self) -> List[StopWithoutLine]:
+    def get_stops(self) -> MergeableList:
         return self._stops
 
     def delete_stops(self):

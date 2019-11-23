@@ -10,6 +10,11 @@ class StopWithoutLine:
         self._location: [Location, None] = None
         self._base_stop: [StopWithoutLine, None] = None
 
+    def override(self, stop):
+        if not isinstance(stop, StopWithoutLine):
+            raise NotImplementedError("Tried to override Stop with " + str(type(stop)))
+        self = stop
+
     def __str__(self) -> str:
         return self._stop_id
 
@@ -17,6 +22,16 @@ class StopWithoutLine:
         if not isinstance(other, StopWithoutLine):
             raise NotImplementedError("Tried to compare Stop with " + str(type(other)))
         return self.__str__() == other.__str__()
+
+    def __add__(self, other):
+        if not isinstance(other, StopWithoutLine):
+            raise NotImplementedError("Tried to add a StopWithoutLocation with " + str(type(other)))
+        #        if str(other) != self.__str__():
+        #            raise NotImplementedError("Tried to merge different stops")
+        if not self.has_location() and other.has_location():
+            self.set_location(other.get_location())
+        other.override(self)
+        return self
 
     def set_location(self, location: Location):
         self._location = location

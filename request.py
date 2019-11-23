@@ -8,6 +8,7 @@ from Classes.LocationResponse import LocationResponse
 from Classes.StopWithoutLine import StopWithoutLine
 from Classes.StopResponse import StopResponse
 from Classes.TripResponse import TripResponse
+from Classes.MergeableList import MergeableList
 import threading
 from multiprocessing import Pool
 
@@ -122,11 +123,11 @@ def stop_name_request(name: str):
     return tree
 
 
-def parallel_location(stops: List[StopWithoutLine], threads: int = 20, **kwargs):
+def parallel_location(stops: List[StopWithoutLine], threads: int = 20, **kwargs) -> MergeableList:
     args: List[List[StopWithoutLine]] = []
     for i in stops:
         args.append([i])
-    return parallelise(request_location_informaiton, args, [kwargs], threads=threads)
+    return MergeableList(parallelise(request_location_informaiton, args, [kwargs], threads=threads))
 
 
 def parallel_stop(data: List[List[Any]], threads: int = 20, **kwargs):

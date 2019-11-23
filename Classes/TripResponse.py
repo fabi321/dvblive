@@ -6,6 +6,7 @@ from Classes.Line import Line
 from Classes.Response import Response
 from Classes.Stop import Stop
 from Classes.Section import Section
+from Classes.MergeableList import MergeableList
 import logging
 
 logger: logging.Logger = logging.getLogger('TripResponse')
@@ -15,10 +16,10 @@ class TripResponse(Response):
     def __init__(self, elements: List[ElementTree.ElementTree], **kwargs):
         Response.__init__(self, elements, **kwargs)
         self._locations: [List[Location], None] = None
-        self._ready_stops: [List[Stop], None] = None
+        self._ready_stops: [MergeableList, None] = None
         self._stops: [List[str], None] = None
         self._line: [Line, None] = None
-        self._sections: [List[Section], None] = None
+        self._sections: [MergeableList, None] = None
         self._lons: [List[str], None] = None
         self._lats: [List[str], None] = None
         self._predefined_line_trias_id = kwargs.get('line_trias_id')
@@ -32,7 +33,7 @@ class TripResponse(Response):
         else:
             is_lineref = False
         complex_string: List[str] = construct_complex_xpath('Trip', is_lineref, True, 'lats', 'lons', **self._kwargs)
-        self._locations: List[Location] = []
+        self._locations: MergeableList = MergeableList([])
         for i in complex_string:
             list: List[str] = i.split(' # ')
             self._locations.append({'latitude': float(list[0]), 'longitude': float(list[1])})
@@ -40,8 +41,7 @@ class TripResponse(Response):
             if self._locations.count(self._locations[i]) > 1:
                 self._locations.pop(i)
 
-
-    def get_cords(self) -> List[Location]:
+    def get_cords(self) -> MergeableList:
         if not self._locations:
             self._get_cords()
         return self._locations
@@ -80,19 +80,19 @@ class TripResponse(Response):
             self._stops.append(list[0])
             self._stop_names.append(list[1])
 
-    def get_stops(self) -> List[Stop]:
+    def get_stops(self) -> MergeableList:
         if not self._ready_stops:
             if not self._stops:
                 self._get_stops()
             if not self._line:
                 self._get_line()
-            self._ready_stops: List[Stop] = []
+            self._ready_stops: MergeableList = MergeableList([])
             for i in range(len(self._stops)):
-                self._ready_stops.append(Stop(self._stops[i], [self._line], self._stop_names[i]))
+                self._ready_stops.append(Stop(self._stops[i], MergeableList([self._line]), self._stop_names[i]))
         return self._ready_stops
 
     def _get_sections(self):
-        self._sections: List[Section] = []
+        self._sections: MergeableList = MergeableList([])
         if not self._stops:
             self._get_stops()
         if not self._line:
@@ -100,7 +100,7 @@ class TripResponse(Response):
         for i in range(1, len(self._stops)):
             self._sections.append(Section(self._ready_stops[i - 1], self._ready_stops[i], self._line))
 
-    def get_sections(self) -> List[Section]:
+    def get_sections(self) -> MergeableList:
         if not self._sections:
             self._get_sections()
         return self._sections

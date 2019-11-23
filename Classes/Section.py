@@ -18,22 +18,22 @@ class Section:
     def get_lines(self) -> MergeableList:
         return self._line
 
-    def __add__(self, other):
-        if not isinstance(other, Section):
-            raise NotImplementedError("Tried to add Section and " + str(type(other)))
-        if str(other) != self.__str__():
-            raise NotImplementedError("Tried to merge different sections")
-        self._line += other.get_lines()
-        other.override(self)
-        return self
-
     def set_polygon(self, polygon: MergeableList):
         self._polygon = polygon
 
     def __eq__(self, other):
-        if not isinstance(other, Section):
+        if not isinstance(other, (Section, str)):
             raise NotImplementedError("Tried to compare Section with " + str(type(other)))
         return self.__str__() == other.__str__()
+
+    def __add__(self, other):
+        if not isinstance(other, Section):
+            raise NotImplementedError("Tried to add Section and " + str(type(other)))
+        if other != self:
+            raise NotImplementedError("Tried to merge different sections")
+        self._line += other.get_lines()
+        other.override(self)
+        return self
 
     def get_polygon(self) -> MergeableList:
         if not self._polygon:

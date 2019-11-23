@@ -32,7 +32,7 @@ class Time:
         return str(self._stop)
 
     def __eq__(self, other) -> bool:
-        if not isinstance(other, Time):
+        if not isinstance(other, (Time, str)):
             raise NotImplementedError('Tried to compare Times with ' + str(type(other)))
         return self.__str__() == str(other)
 

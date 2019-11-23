@@ -35,7 +35,7 @@ class Journey:
         return self._trias_id
 
     def __eq__(self, other):
-        if not isinstance(other, Journey):
+        if not isinstance(other, (Journey, str)):
             raise NotImplementedError('Tried to compare Journey with ' + str(type(other)))
         return self.__str__() == str(other)
 

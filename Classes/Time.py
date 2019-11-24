@@ -1,11 +1,16 @@
 from Classes.StopWithoutLine import StopWithoutLine
 import datetime
+import time
 
 
 def unix_time_from_time_string(time_string: str) -> int:
     time_string: str = time_string.replace('Z', '+00:00')
-    time: datetime.datetime = datetime.datetime.fromisoformat(time_string)
+    try:
+        time: datetime.datetime = datetime.datetime.fromisoformat(time_string)
+    except AttributeError:
+        time: datetime.datetime = datetime.datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S+00:00")
     return int(time.timestamp())
+        
 
 
 class Time:

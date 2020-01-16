@@ -45,12 +45,12 @@ class Manager(Persistent):
         return self
 
     def append(self, other: _T, key=None):
-        if not isinstance(other, self._value):
+        if not isinstance(other, type(self._value)):
             raise NotImplementedError('Tried to add ' + str(type(self._value)) + ' with ' + str(type(other)) + '.')
         db: ZODB.DB = ZODB.config.databaseFromString(self._db_config)
         connection: Connection = db.open()
         items = connection.root()[self._name]
-        while self._highest_index not in self._mappings.keys():
+        while self._highest_index in self._mappings.keys():
             self._highest_index += 1
         items[self._highest_index] = other
         self._mappings[key if key else str(other)] = self._highest_index

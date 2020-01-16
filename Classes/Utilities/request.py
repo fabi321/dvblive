@@ -98,7 +98,7 @@ def request_location_information(stop: StopWithoutLineStr, **kwargs) -> StopWith
     return stop
 
 
-def stop_request(stop: StopWithoutLine, request_time: UnixTime, number: int, **kwargs) -> \
+def stop_request(stop: StopWithoutLineStr, request_time: UnixTime, number: int, **kwargs) -> \
         [List[ElementTree.ElementTree], StopResponse]:
     request: str = xml_requests.stop_request.replace('$STATION', str(stop))
     request_time: str = unix_time_to_iso(request_time)
@@ -112,9 +112,10 @@ def stop_request(stop: StopWithoutLine, request_time: UnixTime, number: int, **k
     tree: List[ElementTree.ElementTree] = ElementTree.fromstring(r.content)
     if kwargs.get('return_tree'):
         return tree
+    calculate_lines: bool = 'calculate_lines' in kwargs.keys()
     request_element: StopResponse = StopResponse(tree, **kwargs)
     # pre-calculate elements to save time at not multiprocessed parts
-    if kwargs.get('calculate_lines'):
+    if calculate_lines:
         request_element.get_lines()
     return request_element
 
@@ -165,8 +166,8 @@ def stop_name_request(name: str) -> List[ElementTree.ElementTree]:
     return tree
 
 
-def parallel_location(stops: Sequence[Union[StopWithoutLineStr, StopStr]], threads: int = 20, **kwargs) -> List[
-    Union[StopWithoutLineStr, StopStr]]:
+def parallel_location(stops: Sequence[Union[StopWithoutLineStr, StopStr]], threads: int = 20, **kwargs) -> \
+        List[Union[StopWithoutLineStr, StopStr]]:
     args: List[List[StopWithoutLineStr]] = []
     for i in stops:
         args.append([i])

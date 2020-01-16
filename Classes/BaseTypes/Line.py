@@ -41,7 +41,7 @@ class Line(Persistent):
     def add_journey(self, journey: JourneyStr):
         try:
             self._journeys.index(journey)
-        #            raise NotImplementedError('Old, fucked up Behavior, tried to add already exsisting journey to line')
+# raise NotImplementedError('Old, fucked up Behavior, tried to add already exsisting journey to line')
         except ValueError:
             self._journeys.append(journey)
         commit()

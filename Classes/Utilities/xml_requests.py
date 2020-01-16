@@ -19,6 +19,7 @@ location_information_request_stop: str = """<?xml version="1.0" encoding="UTF-8"
     </ServiceRequest>
 </Trias>"""
 
+# noinspection PyPep8
 trip_request: str = """<?xml version="1.0" encoding="UTF-8"?>
 <Trias version="1.2" xmlns="http://www.vdv.de/trias" xmlns:siri="http://www.siri.org.uk/siri" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ServiceRequest>

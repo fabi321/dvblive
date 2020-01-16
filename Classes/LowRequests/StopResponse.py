@@ -30,16 +30,18 @@ class StopResponse(Response):
         complex_string: List[str] = construct_complex_xpath('StopEvent', False, False, 'line_trias_id', 'line_number',
                                                             'line_string', 'line_start', 'line_start_name', 'line_end',
                                                             'line_end_name', **self._kwargs)
+        # TODO use complex_string_to_dict
         lines: DBLine = connection.root().lines
         stops: DBStopWithoutLine = connection.root().stops_without_line
         self._lines: List[LineStr] = []
         for i in complex_string:
             list: List[str] = i.split(' # ')
             trias_id: LineStr = LineStr(list[0])
-            if not trias_id in lines.keys():
+            if trias_id not in lines.keys():
                 number: int = int(list[1])
                 string: str = list[2]
                 line: Line = Line(number, string, trias_id)
+                # TODO doesn't work
                 lines[trias_id] = line
             if lines[trias_id].get_len_stops() < 2:
                 lines[trias_id].delete_stops()

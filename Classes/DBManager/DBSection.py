@@ -7,5 +7,6 @@ class DBSection(Manager):
     def __init__(self):
         Manager.__init__(self, 'sections_data', SectionStr(''), Section(StopStr(''), StopStr(''), LineStr('')))
 
-    def generate_section_str(self, start_stop: StopStr, end_stop: StopStr) -> SectionStr:
+    @staticmethod
+    def generate_section_str(start_stop: StopStr, end_stop: StopStr) -> SectionStr:
         return SectionStr(start_stop + '=|=' + end_stop)

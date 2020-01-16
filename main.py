@@ -7,7 +7,7 @@ from generate_json import generate_json
 logging.basicConfig(level=logging.WARNING, format='[%(levelname)s] %(asctime)s %(name)s [%(funcName)s]: %(message)s',
                     datefmt='%Y-%m-%dT%H:%M:%S')
 
-debug: bool = False
+debug: bool = True
 fetch_init(debug)
 abschnitte, haltestellen = generate_json()
 with open('frontend/abschnitte.json', 'w') as f:

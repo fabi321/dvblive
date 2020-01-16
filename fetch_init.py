@@ -10,7 +10,6 @@ from Classes.BaseTypes.Line import Line
 from Classes.DBManager.DBLine import DBLine
 from Classes.DBManager.DBSection import DBSection
 from Classes.DBManager.DBStop import DBStop
-from Classes.LowRequests.StopResponse import StopResponse
 from Classes.LowRequests.TripResponse import TripResponse
 from Classes.Utilities.db_config import zodb_conf
 from Classes.Utilities.request import parallel_location, parallel_stop, parallel_trip
@@ -37,8 +36,7 @@ def fetch_init(debug: bool = False):
     for i in base_stops:
         base_dicts.append((i, request_time, 15))
     logger.info('Getting lines from base stops.')
-    lines: List[StopResponse] = parallel_stop(base_dicts, debug=debug, threads=request_parallelization,
-                                              calculate_lines=True)
+    parallel_stop(base_dicts, debug=debug, threads=request_parallelization, calculate_lines=True)
     db_lines: DBLine = connection.root().lines
     logger.info('Got ' + str(len(db_lines)) + ' lines.')
     trips: List[Tuple[StopWithoutLineStr, StopWithoutLineStr, UnixTime]] = []

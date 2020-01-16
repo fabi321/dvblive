@@ -56,8 +56,8 @@ class Manager(Persistent):
         self._mappings[key if key else str(other)] = self._highest_index
         self._highest_index += 1
         transaction.commit()
-        db.close()
         connection.close()
+        db.close()
 
     def __len__(self) -> int:
         return len(self._mappings)

@@ -1,14 +1,16 @@
-from typing import Dict, Tuple, List
-from elementpath import select
+from typing import Dict, Tuple, List, Any
 from xml.etree import ElementTree
 
+from elementpath import select
 
 elementpath_concat_fixed: bool = False
 
-stoerung: str = "for $x in //StopEvent[descendant::EstimatedTime]/descendant::*[local-name(.)='SituationNumber'] return //PtSituation[*[local-name(.)='SituationNumber'] = $x]/*[local-name(.)='Description']"
+stoerung: str = "for $x in //StopEvent[descendant::EstimatedTime]/descendant::*[local-name(.)='SituationNumber']" \
+                " return //PtSituation[*[local-name(.)='SituationNumber'] = $x]/*[local-name(.)='Description']"
 location_lon: str = "//GeoPosition/Longitude/text()"
 location_lat: str = "//GeoPosition/Latitude/text()"
-prefix: str = "(//TripResult[descendant::Service[count(ServiceSection) = 1]/ServiceSection[Mode/PtMode = 'tram']$LINEREF])"
+prefix: str = "(//TripResult[descendant::Service[count(ServiceSection) = 1]/ServiceSection[Mode/PtMode =" \
+              " 'tram']$LINEREF])"
 first: str = "[1]"
 stop_name_ref: str = "/descendant::StopPointRef/text()"
 stop_name_lon: str = "/descendant::Longitude/text()"
@@ -19,6 +21,7 @@ service: str = "/descendant::Service"
 projection: str = "/descendant::Projection"
 timed_leg: str = "/descendant::TimedLeg"
 this_call: str = "/descendant::ThisCall"
+
 
 def construct_simple_xpath(trip: bool, is_lineref: bool, single: bool, original_string, **kwargs) -> str:
     if trip:
@@ -38,6 +41,7 @@ def construct_simple_xpath(trip: bool, is_lineref: bool, single: bool, original_
         return temp_pre + first + original_string
     return temp_pre + original_string
 
+
 paths: Dict[str, Tuple[str, str]] = {
     'lons': ("Position/Longitude/text()", projection),
     'lats': ("Position/Latitude/text()", projection),
@@ -54,6 +58,7 @@ paths: Dict[str, Tuple[str, str]] = {
     'line_end_name': ("DestinationText/Text/text()", service),
     'journey_ref': ("JourneyRef/text()", service)
 }
+
 
 def concat_not_working_workaround(xpath: str, tree: ElementTree.ElementTree, **kwargs):
     origin, entities = xpath.split('/concat(')
@@ -89,7 +94,8 @@ def concat_not_working_workaround(xpath: str, tree: ElementTree.ElementTree, **k
     return output
 
 
-def construct_complex_xpath(type: str, is_lineref: bool, single: bool, *args: str, tree: ElementTree.ElementTree, **kwargs) -> List[str]:
+def construct_complex_xpath(type: str, is_lineref: bool, single: bool, *args: str, tree: ElementTree.ElementTree,
+                            **kwargs) -> List[str]:
     if not args:
         raise NotImplementedError('Tried to run construct_complex_xpath without xpath names')
     if type == 'StopEvent' or type == 'Trip':
@@ -102,22 +108,39 @@ def construct_complex_xpath(type: str, is_lineref: bool, single: bool, *args: st
             xpaths.append(paths[i][0])
             prefixes.append(paths[i][1])
         extension: str
+        separator: str = ", '" + kwargs.get('separator', ' # ') + "', "
         if prefixes.count(prefixes[0]) == len(prefixes):
             extension = prefixes[0] + '/concat('
             for i in xpaths:
-                extension += i + ", ' # ', "
-            extension = extension[:-9] + ')'
+                extension += i + separator
+            extension = extension[:-(len(separator))] + ')'
         else:
             extension = '/concat('
             for i in range(len(xpaths)):
-                extension += prefixes[i][1:] + '/' + xpaths[i] + ", ' # ', "
-            extension = extension[:-9] + ')'
+                extension += prefixes[i][1:] + '/' + xpaths[i] + separator
+            extension = extension[:-(len(separator))] + ')'
         if type == 'StopEvent':
             extension = extension.replace(timed_leg[1:], this_call[1:])
         xpath = construct_simple_xpath(trip, is_lineref, single, extension, **kwargs)
         elementtree_kwargs: Dict[str, Any] = {'namespaces': kwargs.get('namespaces')}
+        result: List[str]
         if elementpath_concat_fixed:
-            return select(tree, xpath, **elementtree_kwargs)
-        return concat_not_working_workaround(xpath, tree, **elementtree_kwargs)
+            result = select(tree, xpath, **elementtree_kwargs)
+        else:
+            result = concat_not_working_workaround(xpath, tree, **elementtree_kwargs)
+        return result
     else:
         raise NotImplementedError('Unknown type ' + type + ' at construct_complex_xpath.')
+
+
+def complex_xpath_to_dict_list(result: List[str], *args, **kwargs) -> List[Dict[str, str]]:
+    final_result: List[Dict[str, str]] = []
+    for i in result:
+        splitted: List[str] = i.split(kwargs.get('separator', ' # '))
+        item_dict: Dict[str, str] = {}
+        for j in range(len(args)):
+            if splitted[j]:
+                item_dict.update({args[j]: splitted[j]})
+        if item_dict != {}:
+            final_result.append(item_dict)
+    return final_result

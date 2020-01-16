@@ -1,10 +1,10 @@
 from typing import List, TypeVar
 
+T = TypeVar('T')
 
-class MergeableList(list):
-    _T = TypeVar('_T')
 
-    def __init__(self, mergeable_list: List[_T]):
+class MergeableList(List[T], list):
+    def __init__(self, mergeable_list: List[T]):
         list.__init__(self)
         for i in mergeable_list:
             self.append(i)

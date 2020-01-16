@@ -1,5 +1,5 @@
-from Classes.StopNameResponse import StopNameResponse
-from request import stop_name_request
+from Classes.LowRequests.StopNameResponse import StopNameResponse
+from Classes.Utilities.request import stop_name_request
 
 
 class IDStopNameResponse(StopNameResponse):

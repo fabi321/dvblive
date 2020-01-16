@@ -1,9 +1,11 @@
 from typing import List
 from xml.etree import ElementTree
+
 from elementpath import select
-import XPaths
-from Classes import Location
-from Classes.Response import Response
+
+from Classes.LowRequests.Response import Response
+from Classes.Utilities import XPaths
+from Classes.Utilities.typings import Location
 
 
 class LocationResponse(Response):
@@ -12,6 +14,7 @@ class LocationResponse(Response):
         self._lat: [float, None] = None
 
     def _get_cords(self):
+        # TODO: Use complex Xpaths
         lat = select(self._elements, XPaths.location_lat, namespaces=self._namespaces)
         self._lat: float = float(lat[0]) if lat else None
         lon = select(self._elements, XPaths.location_lon, namespaces=self._namespaces)

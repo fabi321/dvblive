@@ -19,7 +19,7 @@ location_information_request_stop: str = """<?xml version="1.0" encoding="UTF-8"
     </ServiceRequest>
 </Trias>"""
 
-trip_request: str ="""<?xml version="1.0" encoding="UTF-8"?>
+trip_request: str = """<?xml version="1.0" encoding="UTF-8"?>
 <Trias version="1.2" xmlns="http://www.vdv.de/trias" xmlns:siri="http://www.siri.org.uk/siri" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ServiceRequest>
     <siri:RequestTimestamp>2019-10-11T11:00:00</siri:RequestTimestamp>
